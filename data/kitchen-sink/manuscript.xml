@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//RDS/DTD Stencila Reproducible Documents DTD v1.0" "Stencila-JATS-1.0.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:stencila="https://stenci.la/dtd/Stencila-JATS-1.0.dtd">
+  <front>
+    <article-meta>
+      <title-group>
+        <article-title>Texture Stencila Plugin - Kitchen-Sink</article-title>
+      </title-group>
+      <abstract />
+    </article-meta>
+  </front>
+  <body>
+    <p>ABCDEFG</p>
+    <stencila:cell>
+      <stencila:source><![CDATA[x = 1 + 2]]></stencila:source>
+    </stencila:cell>
+    <p>ABCDEFG</p>
+    <stencila:cell>
+      <stencila:source><![CDATA[y = 2 * x]]></stencila:source>
+    </stencila:cell>
+    <p>ABCDEFG <stencila:inline-cell><stencila:source><![CDATA[y/3]]></stencila:source></stencila:inline-cell> HIJKLM</p>
+  </body>
+  <back />
+</article>

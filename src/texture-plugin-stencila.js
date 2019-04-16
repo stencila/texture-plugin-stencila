@@ -1,0 +1,44 @@
+import {
+  Texture, ArticleJATSImporter, ArticleJATSExporter
+} from 'texture'
+import RunCellCommand from './RunCellCommand'
+import RunAllCellsCommand from './RunAllCellsCommand'
+import StencilaCell from './StencilaCell'
+import StencilaCellComponent from './StencilaCellComponent'
+import StencilaCellConverter from './StencilaCellConverter'
+import StencilaInlineCell from './StencilaInlineCell'
+import StencilaInlineCellComponent from './StencilaInlineCellComponent'
+import StencilaInlineCellConverter from './StencilaInlineCellConverter'
+
+const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
+
+Texture.registerPlugin({
+  name: 'stencila',
+  configure (configurator) {
+    let articleConfig = configurator.getConfiguration('article')
+
+    // let Texture know about a JATS customization used by this plugin
+    articleConfig.registerSchemaId(RDS_JATS_PUBLIC_ID)
+
+    // register additional nodes for the internal article document model
+    articleConfig.addNode(StencilaCell)
+    articleConfig.addNode(StencilaInlineCell)
+    // register converters for custom elements
+    articleConfig.addConverter(RDS_JATS_PUBLIC_ID, StencilaCellConverter)
+    articleConfig.addConverter(RDS_JATS_PUBLIC_ID, StencilaInlineCellConverter)
+    articleConfig.addImporter(RDS_JATS_PUBLIC_ID, ArticleJATSImporter, {
+      converterGroups: ['jats', RDS_JATS_PUBLIC_ID]
+    })
+    // register a factory for an exporter
+    articleConfig.addExporter(RDS_JATS_PUBLIC_ID, ArticleJATSExporter, {
+      converterGroups: ['jats', RDS_JATS_PUBLIC_ID]
+    })
+    // add commands and components to the article manuscript configuration
+    let articleManuscriptConfig = configurator.getConfiguration('article.manuscript')
+    articleManuscriptConfig.addComponent(StencilaCell.type, StencilaCellComponent)
+    articleManuscriptConfig.addComponent(StencilaInlineCell.type, StencilaInlineCellComponent)
+    // TODO: these commands should only be activated when the doc is a RDS article
+    articleManuscriptConfig.addCommand(RunCellCommand.id, RunCellCommand)
+    articleManuscriptConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand)
+  }
+})

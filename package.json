@@ -1,0 +1,27 @@
+{
+  "name": "texture-plugin-stencila",
+  "version": "0.1.0",
+  "description": "Texture plugin for Stencila",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/substance/texture-plugin-stencila.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/substance/texture-plugin-stencila/issues"
+  },
+  "homepage": "https://github.com/substance/texture-plugin-stencila#readme",
+  "devDependencies": {
+    "substance-bundler": "^0.25.5",
+    "substance-test": "0.13.2",
+    "substance-texture": "2.x"
+  },
+  "peerDependencies": {
+    "substance-texture": "2.x"
+  }
+}
