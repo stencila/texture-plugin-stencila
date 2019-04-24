@@ -17,9 +17,13 @@
   },
   "homepage": "https://github.com/substance/texture-plugin-stencila#readme",
   "devDependencies": {
-    "substance-bundler": "^0.25.5",
+    "css-loader": "^2.1.1",
+    "monaco-editor": "^0.16.2",
+    "style-loader": "^0.23.1",
+    "substance-bundler": "0.25.5",
     "substance-test": "0.13.2",
-    "substance-texture": "2.x"
+    "substance-texture": "2.x",
+    "webpack": "^4.30.0"
   },
   "peerDependencies": {
     "substance-texture": "2.x"

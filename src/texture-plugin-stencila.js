@@ -1,6 +1,7 @@
 import {
   Texture, ArticleJATSImporter, ArticleJATSExporter
 } from 'texture'
+import CodeEditor from './code-editor/CodeEditor'
 import RunCellCommand from './RunCellCommand'
 import RunAllCellsCommand from './RunAllCellsCommand'
 import StencilaCell from './StencilaCell'
@@ -35,6 +36,7 @@ Texture.registerPlugin({
     })
     // add commands and components to the article manuscript configuration
     let articleManuscriptConfig = configurator.getConfiguration('article.manuscript')
+    articleManuscriptConfig.addComponent('code-editor', CodeEditor)
     articleManuscriptConfig.addComponent(StencilaCell.type, StencilaCellComponent)
     articleManuscriptConfig.addComponent(StencilaInlineCell.type, StencilaInlineCellComponent)
     // TODO: these commands should only be activated when the doc is a RDS article
