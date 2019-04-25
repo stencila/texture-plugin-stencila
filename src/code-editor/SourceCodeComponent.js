@@ -56,7 +56,7 @@ export default class SourceCodeComponent extends TextPropertyComponent {
     // HACK: this is not inside the regular AppState update flow
     // thus we have to make sure that we recover the selection
     let needToRecoverSelection = this.context.surface._state.hasNativeFocus
-    console.log('Tokens changed for', getKeyForPath(this.props.path), e)
+    // console.log('Tokens changed for', getKeyForPath(this.props.path), e)
     let ranges = e.ranges
     let visited = new Set()
     for (let range of ranges) {

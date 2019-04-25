@@ -1,4 +1,4 @@
-import { TextOperation, last, ObjectOperation } from 'substance'
+import { TextOperation, last } from 'substance'
 
 import { TokenizationRegistry } from 'monaco-editor/esm/vs/editor/common/modes.js'
 import { Disposable } from 'monaco-editor/esm/vs/base/common/lifecycle.js'
@@ -10,8 +10,10 @@ import { ModelLinesTokens } from 'monaco-editor/esm/vs/editor/common/model/textM
 import { ModelRawLineChanged, ModelRawLinesDeleted, ModelRawLinesInserted } from 'monaco-editor/esm/vs/editor/common/model/textModelEvents.js'
 import { StaticServices } from 'monaco-editor/esm/vs/editor/standalone/browser/standaloneServices.js'
 import { TypeOperations } from 'monaco-editor/esm/vs/editor/common/controller/cursorTypeOperations.js'
-import { CursorConfiguration } from 'monaco-editor/esm/vs/editor/common/controller/cursorCommon'
-import { ReplaceCommand } from 'monaco-editor/esm/vs/editor/common/commands/replaceCommand'
+import { Configuration } from 'monaco-editor/esm/vs/editor/browser/config/configuration.js'
+import { CursorConfiguration } from 'monaco-editor/esm/vs/editor/common/controller/cursorCommon.js'
+import { ReplaceCommand, ReplaceCommandWithOffsetCursorState } from 'monaco-editor/esm/vs/editor/common/commands/replaceCommand.js'
+import { LanguageConfigurationRegistry } from 'monaco-editor/esm/vs/editor/common/modes/languageConfigurationRegistry'
 
 import createTextBuffer from './createTextBuffer'
 
@@ -43,20 +45,20 @@ export default class SubstanceMonacoAdapter extends Disposable {
       tabSize: 2,
       trimAutoWhitespace: false
     }
-    // TODO: monaco keeps a lot of layout information here
-    // for now, we try to get away with a stub version
-    this._config = {
-      editor: {
-        layoutInfo: {},
-        fontInfo: {}
-      }
-    }
+    let config = new Configuration({ language, value: source }, null, new StubAccessibilityService())
+    this._config = config
 
     this._buffer = createTextBuffer(source, this._modelOptions.defaultEOL)
     this._cursorConfig = new CursorConfiguration(this._languageIdentifier, this._modelOptions, this._config)
     this._tokenizationListener = TokenizationRegistry.onDidChange(e => this._onTokenizerDidChange(e))
     this._onDidChangeTokens = this._register(new Emitter())
     this.onDidChangeTokens = this._onDidChangeTokens.event
+
+    this._languageRegistryListener = LanguageConfigurationRegistry.onDidChange(e => {
+      if (e.languageIdentifier.id === this._languageIdentifier.id) {
+        this._cursorConfig = new CursorConfiguration(this._languageIdentifier, this._modelOptions, this._config)
+      }
+    })
 
     this._revalidateTokensTimeout = -1
     this._isDisposed = false
@@ -70,6 +72,13 @@ export default class SubstanceMonacoAdapter extends Disposable {
     TextModel.prototype.emitModelTokensChangedEvent.call(this, e)
   }
 
+  findMatchingBracketUp (_bracket, _position) {
+    return TextModel.prototype.findMatchingBracketUp.call(this, _bracket, _position)
+  }
+  _findMatchingBracketUp (data, position) {
+    return TextModel.prototype._findMatchingBracketUp.call(this, data, position)
+  }
+
   forceTokenization (lineNumber) {
     return TextModel.prototype.forceTokenization.call(this, lineNumber)
   }
@@ -80,6 +89,10 @@ export default class SubstanceMonacoAdapter extends Disposable {
 
   getLineContent (lineNumber) {
     return TextModel.prototype.getLineContent.call(this, lineNumber)
+  }
+
+  getLineFirstNonWhitespaceColumn (lineNumber) {
+    return TextModel.prototype.getLineFirstNonWhitespaceColumn.call(this, lineNumber)
   }
 
   getLineMaxColumn (lineNumber) {
@@ -109,20 +122,23 @@ export default class SubstanceMonacoAdapter extends Disposable {
     return TextModel.prototype.isCheapToTokenize.call(this, lineNumber)
   }
 
+  matchBracket (position) {
+    return TextModel.prototype.matchBracket.call(this, position)
+  }
+
+  _matchBracket (position) {
+    return TextModel.prototype._matchBracket.call(this, position)
+  }
+
   /**
-   * Update the underlying Monaco buffer with a set of Substance TextOperations
+   * Update the underlying Monaco buffer with a sequence of Substance TextOperations
    * @param {TextOperation[]} ops
    */
   updateBuffer (ops) {
-    // ATTENTION: this implementation is derived from TextModel._applyEdits
-    // mapping to Substance Operations
-
-    // Note: ops is typically one of 'insert only', 'delete only', or
-    // 'delete and insert'
-    // Doing one buffer change per op to avoid need for transformed
-    // positions.
-    let contentChanges = []
     let oldLineCount = this._buffer.getLineCount()
+
+    // Doing one buffer change per op to avoid need for transformed positions.
+    let contentChanges = []
     for (let op of ops) {
       if (op.isInsert()) {
         // Note: this returns 'augmented' operations, but don't know what to do with
@@ -146,55 +162,24 @@ export default class SubstanceMonacoAdapter extends Disposable {
         contentChanges = contentChanges.concat(result.changes)
       }
     }
-    let newLineCount = this._buffer.getLineCount()
-    let rawContentChanges = []
-    if (contentChanges.length !== 0) {
-      let lineCount = oldLineCount
-      for (let i = 0, len = contentChanges.length; i < len; i++) {
-        let change = contentChanges[i]
-        let [eolCount, firstLineLength] = TextModel._eolCount(change.text)
-        try {
-          this._tokens.applyEdits(change.range, eolCount, firstLineLength)
-        } catch (err) {
-          // emergency recovery => reset tokens
-          this._tokens = new ModelLinesTokens(this._tokens.languageIdentifier, this._tokens.tokenizationSupport)
-        }
-        let startLineNumber = change.range.startLineNumber
-        let endLineNumber = change.range.endLineNumber
-        let deletingLinesCnt = endLineNumber - startLineNumber
-        let insertingLinesCnt = eolCount
-        let editingLinesCnt = Math.min(deletingLinesCnt, insertingLinesCnt)
-        let changeLineCountDelta = (insertingLinesCnt - deletingLinesCnt)
-        for (let j = editingLinesCnt; j >= 0; j--) {
-          let editLineNumber = startLineNumber + j
-          let currentEditLineNumber = newLineCount - lineCount - changeLineCountDelta + editLineNumber
-          rawContentChanges.push(new ModelRawLineChanged(editLineNumber, this.getLineContent(currentEditLineNumber)))
-        }
-        if (editingLinesCnt < deletingLinesCnt) {
-          // Must delete some lines
-          let spliceStartLineNumber = startLineNumber + editingLinesCnt
-          rawContentChanges.push(new ModelRawLinesDeleted(spliceStartLineNumber + 1, endLineNumber))
-        }
-        if (editingLinesCnt < insertingLinesCnt) {
-          // Must insert some lines
-          let spliceLineNumber = startLineNumber + editingLinesCnt
-          let cnt = insertingLinesCnt - editingLinesCnt
-          let fromLineNumber = newLineCount - lineCount - cnt + spliceLineNumber + 1
-          let newLines = []
-          for (let j = 0; j < cnt; j++) {
-            let lineNumber = fromLineNumber + j
-            newLines[lineNumber - fromLineNumber] = this.getLineContent(lineNumber)
-          }
-          rawContentChanges.push(new ModelRawLinesInserted(spliceLineNumber + 1, startLineNumber + insertingLinesCnt, newLines))
-        }
-        lineCount += changeLineCountDelta
-      }
-    }
+
+    // update tokens
+    this._applyEditsOnTokens(contentChanges)
     if (this._tokens.hasLinesToTokenize(this._buffer)) {
       this._beginBackgroundTokenization()
     }
 
-    return rawContentChanges
+    // extract changes that can be mapped to DOM
+    let changes = this._extractChanges(contentChanges, oldLineCount)
+    return changes
+  }
+
+  validatePosition (position) {
+    return TextModel.prototype.validatePosition.call(this, position)
+  }
+
+  _validatePosition (_lineNumber, _column, strict) {
+    return TextModel.prototype._validatePosition.call(this, _lineNumber, _column, strict)
   }
 
   _assertNotDisposed () {
@@ -244,6 +229,65 @@ export default class SubstanceMonacoAdapter extends Disposable {
     this._warmUpTokens()
   }
 
+  _applyEditsOnTokens (contentChanges) {
+    for (let i = 0, len = contentChanges.length; i < len; i++) {
+      let change = contentChanges[i]
+      let [eolCount, firstLineLength] = TextModel._eolCount(change.text)
+      try {
+        this._tokens.applyEdits(change.range, eolCount, firstLineLength)
+      } catch (err) {
+        // emergency recovery => reset tokens
+        this._tokens = new ModelLinesTokens(this._tokens.languageIdentifier, this._tokens.tokenizationSupport)
+        return
+      }
+    }
+  }
+
+  _extractChanges (contentChanges, oldLineCount) {
+    // HACK: unfortunately this is just a copy of code from TextModel._applyEdits
+    // we need this in the SourceCodeComponent to incrementally update the DOM
+    // e.g. adding or removing lines
+    let newLineCount = this._buffer.getLineCount()
+    let rawContentChanges = []
+    if (contentChanges.length !== 0) {
+      let lineCount = oldLineCount
+      for (let i = 0, len = contentChanges.length; i < len; i++) {
+        let change = contentChanges[i]
+        let [eolCount] = TextModel._eolCount(change.text)
+        let startLineNumber = change.range.startLineNumber
+        let endLineNumber = change.range.endLineNumber
+        let deletingLinesCnt = endLineNumber - startLineNumber
+        let insertingLinesCnt = eolCount
+        let editingLinesCnt = Math.min(deletingLinesCnt, insertingLinesCnt)
+        let changeLineCountDelta = (insertingLinesCnt - deletingLinesCnt)
+        for (let j = editingLinesCnt; j >= 0; j--) {
+          let editLineNumber = startLineNumber + j
+          let currentEditLineNumber = newLineCount - lineCount - changeLineCountDelta + editLineNumber
+          rawContentChanges.push(new ModelRawLineChanged(editLineNumber, this.getLineContent(currentEditLineNumber)))
+        }
+        if (editingLinesCnt < deletingLinesCnt) {
+          // Must delete some lines
+          let spliceStartLineNumber = startLineNumber + editingLinesCnt
+          rawContentChanges.push(new ModelRawLinesDeleted(spliceStartLineNumber + 1, endLineNumber))
+        }
+        if (editingLinesCnt < insertingLinesCnt) {
+          // Must insert some lines
+          let spliceLineNumber = startLineNumber + editingLinesCnt
+          let cnt = insertingLinesCnt - editingLinesCnt
+          let fromLineNumber = newLineCount - lineCount - cnt + spliceLineNumber + 1
+          let newLines = []
+          for (let j = 0; j < cnt; j++) {
+            let lineNumber = fromLineNumber + j
+            newLines[lineNumber - fromLineNumber] = this.getLineContent(lineNumber)
+          }
+          rawContentChanges.push(new ModelRawLinesInserted(spliceLineNumber + 1, startLineNumber + insertingLinesCnt, newLines))
+        }
+        lineCount += changeLineCountDelta
+      }
+    }
+    return rawContentChanges
+  }
+
   // EXPERIMENTAL: trying to reuse monaco implementation as good as possible
   // emulating a change on the monaco model, and mapping that to the substance model
   _type (ch) {
@@ -256,15 +300,34 @@ export default class SubstanceMonacoAdapter extends Disposable {
     let opResult = TypeOperations.typeWithInterceptors(0, this._cursorConfig, this, [monacoSelection], ch)
     console.log('Monaco would do this:', opResult)
     let ops = []
-    for (let cmd of opResult.commands) {
+    const L = opResult.commands.length
+    let newOffset = sel.start.offset
+    for (let i = 0; i < L; i++) {
+      let cmd = opResult.commands[0]
+      let isLast = i === L - 1
       switch (cmd.constructor) {
-        case ReplaceCommand: {
+        case ReplaceCommand:
+        case ReplaceCommandWithOffsetCursorState: {
           let range = cmd._range
+          let text = cmd._text
           let startOffset = this.getOffsetAt({ lineNumber: range.startLineNumber, column: range.startColumn })
           if (!range.isEmpty()) {
             ops.push(TextOperation.Delete(startOffset, this._buffer.getValueInRange(range)))
           }
-          ops.push(TextOperation.Insert(startOffset, cmd._text))
+          ops.push(TextOperation.Insert(startOffset, text))
+          if (isLast) {
+            newOffset = startOffset + text.length
+            if (cmd.constructor === ReplaceCommandWithOffsetCursorState) {
+              // HACK: unfortunately, we can not use the buffer to compute the new selection offset
+              // instead we have to do our own line-column mapping
+              let tmp = createTextBuffer(text, this._modelOptions.defaultEOL)
+              let lastLineNumber = tmp.getLineCount()
+              let newLineNumber = lastLineNumber + cmd._lineNumberDeltaOffset
+              let newColumn = tmp.getLineLength(lastLineNumber) + 1 + cmd._columnDeltaOffset
+              let deltaOffset = tmp.getOffsetAt(newLineNumber, newColumn)
+              newOffset = startOffset + deltaOffset
+            }
+          }
           break
         }
         default: {
@@ -273,12 +336,10 @@ export default class SubstanceMonacoAdapter extends Disposable {
       }
     }
 
-    _transformOrthogonalTextOperations(ops)
+    _transformNonOverlappingTextOperations(ops)
 
-    let lastOp = last(ops)
     // trying to identify specific use-cases
     // I'd like to generalize if that is possible
-    let newOffset = lastOp.isInsert() ? lastOp.pos + lastOp.getLength() : lastOp.pos
     editorSession.transaction(tx => {
       // TODO: find out how this should be done correctly
       // Apparently, without any sorting, or transformation
@@ -315,22 +376,64 @@ export default class SubstanceMonacoAdapter extends Disposable {
 
 /**
  * Experimental
- * Trying to map text operations that are received simultanously,
+ * Trying to map text operations that are based on the same document version, i.e. like they were done simultanously,
  * transforming their offsets so that they can be executed sequentially.
+ * An assumption is that the ops are not overlapping.
  */
-function _transformOrthogonalTextOperations (ops) {
-  // ATTENTION: in this case we should get away by sorting and transforming
-  // in general however we would need to create a mapping for the offset
-  // TODO: if this is not sufficient, introduce a more general Transformer in Substance land
-  ops.sort((a, b) => a.pos - b.pos)
-  let delta = 0
-  for (let op of ops) {
-    op.pos += delta
-    if (op.isInsert()) {
-      delta += op.getLength()
-    } else {
-      delta -= op.getLength()
+function _transformNonOverlappingTextOperations (ops) {
+  // Note: this is an interesting experiment, but not necessary in the current use-case
+  // here it would be sufficient to sort descending and do deletes before inserts at the same pos
+  // let deltas = []
+  // function _addDelta (offset, delta) {
+  //   let insertPos = deltas.findIndex(e => e.offset > offset)
+  //   if (insertPos === -1) insertPos = deltas.length
+  //   deltas.splice(insertPos, 0, { offset, delta })
+  // }
+  // function _getDelta (offset) {
+  //   let boundary = deltas.findIndex(e => e.offset >= offset)
+  //   let delta = 0
+  //   for (let idx = 0; idx < boundary; idx++) {
+  //     delta += deltas[idx].delta
+  //   }
+  //   return delta
+  // }
+  // // sort ops in ascending order
+  // ops.sort((a, b) => a.pos - b.pos)
+  // for (let op of ops) {
+  //   if (op.isInsert()) {
+  //     _addDelta(op.pos, op.getLength())
+  //   } else if (op.isDelete()) {
+  //     _addDelta(op.pos, -op.getLength())
+  //   }
+  //   op.pos += _getDelta(op.pos)
+  // }
+  // return ops
+
+  // sorting in ascending order, but doing delete before insert if at the same position
+  ops.sort((a, b) => {
+    if (a.pos < b.pos) {
+      return 1
+    } else if (a.pos > b.pos) {
+      return -1
+    } else if (a.isDelete() && b.isInsert()) {
+      return -1
+    } else if (a.isInsert() && b.isDelete()) {
+      return 1
     }
-  }
+    return 0
+  })
   return ops
+}
+
+class StubAccessibilityService extends Disposable {
+  constructor () {
+    super()
+
+    this.onDidChangeAccessibilitySupport = this._register(new Emitter())
+    this.onDidChangeAccessibilitySupport = this.onDidChangeAccessibilitySupport.event
+  }
+
+  getAccessibilitySupport () {
+    return {}
+  }
 }

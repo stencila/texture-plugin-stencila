@@ -12,6 +12,10 @@
   <body>
     <p>ABCDEFG</p>
     <stencila:cell>
+      <stencila:source><![CDATA[function foo () {]]></stencila:source>
+    </stencila:cell>
+    <p>ABCDEFG</p>
+    <stencila:cell>
       <stencila:source><![CDATA[x = 1 + 2]]></stencila:source>
     </stencila:cell>
     <p>ABCDEFG</p>
