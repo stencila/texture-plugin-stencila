@@ -14,7 +14,7 @@ import StencilaInlineCellConverter from './StencilaInlineCellConverter'
 const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
 
 Texture.registerPlugin({
-  name: 'stencila',
+  name: 'stencila-plugin',
   configure (configurator) {
     let articleConfig = configurator.getConfiguration('article')
 

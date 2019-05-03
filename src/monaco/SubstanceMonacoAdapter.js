@@ -170,7 +170,7 @@ export default class SubstanceMonacoAdapter extends Disposable {
     }
 
     // extract changes that can be mapped to DOM
-    let changes = this._extractChanges(contentChanges, oldLineCount)
+    let changes = this._extractLineChanges(contentChanges, oldLineCount)
     return changes
   }
 
@@ -243,7 +243,7 @@ export default class SubstanceMonacoAdapter extends Disposable {
     }
   }
 
-  _extractChanges (contentChanges, oldLineCount) {
+  _extractLineChanges (contentChanges, oldLineCount) {
     // HACK: unfortunately this is just a copy of code from TextModel._applyEdits
     // we need this in the SourceCodeComponent to incrementally update the DOM
     // e.g. adding or removing lines
