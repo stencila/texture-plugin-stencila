@@ -45,5 +45,7 @@ Texture.registerPlugin({
     // TODO: these commands should only be activated when the doc is a RDS article
     articleManuscriptConfig.addCommand(RunCellCommand.id, RunCellCommand)
     articleManuscriptConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand)
+
+    articleManuscriptConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCellCommand.id })
   }
 })
