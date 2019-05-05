@@ -10,7 +10,7 @@ b.task('clean', function () {
   b.rm(TMP)
 }).describe('removes all generated files and folders.')
 
-b.task('build', ['clean', 'build:assets', 'build:monaco', 'build:demo', 'build:plugin'])
+b.task('build', ['clean', 'build:assets', 'build:monaco', 'build:demo', 'build:plugin', 'build:css', 'build:js-context-worker'])
   .describe('builds the library bundle.')
 
 b.task('default', ['clean', 'build'])
@@ -34,6 +34,10 @@ b.task('build:plugin', () => {
 
 b.task('build:assets', ['build:vfs'], () => {
   b.copy('./node_modules/substance-texture/dist', path.join(DIST, 'lib', 'texture'))
+})
+
+b.task('build:css', () => {
+  b.css('src/texture-plugin-stencila.css', DIST + 'texture-plugin-stencila.css')
 })
 
 b.task('build:monaco', () => {
