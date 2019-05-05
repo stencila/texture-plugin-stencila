@@ -298,7 +298,7 @@ export default class SubstanceMonacoAdapter extends Disposable {
     // TODO: we should make sure that the selection is a property selection on this editor
     let monacoSelection = this._createMonacoSelection(sel)
     let opResult = TypeOperations.typeWithInterceptors(0, this._cursorConfig, this, [monacoSelection], ch)
-    console.log('Monaco would do this:', opResult)
+    // console.log('Monaco would do this:', opResult)
     let ops = []
     const L = opResult.commands.length
     let newOffset = sel.start.offset
