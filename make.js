@@ -40,6 +40,10 @@ b.task('build:monaco', () => {
   _webpack(b, require('./monaco.webpack.config'))
 })
 
+b.task('build:js-context-worker', () => {
+  _webpack(b, require('./jscontext.webpack.config'))
+})
+
 b.task('build:demo', () => {
   b.js('./demo/web/editor.js', {
     output: [{
