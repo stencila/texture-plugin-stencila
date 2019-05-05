@@ -1,7 +1,6 @@
 const b = require('substance-bundler')
 const vfs = require('substance-bundler/extensions/vfs')
 const path = require('path')
-const webpack = require('webpack')
 
 const DIST = 'dist/'
 const TMP = 'dist/'
@@ -38,48 +37,7 @@ b.task('build:assets', ['build:vfs'], () => {
 })
 
 b.task('build:monaco', () => {
-  b.custom('Bundling monaco', {
-    src: 'src/monaco/*.js',
-    dest: DIST + 'lib/monaco-editor',
-    execute () {
-      return new Promise((resolve, reject) => {
-        webpack({
-          mode: 'development',
-          entry: {
-            'monaco': './src/monaco/index.js',
-            // Package each language's worker and give these filenames in `getWorkerUrl`
-            'editor.worker': 'monaco-editor/esm/vs/editor/editor.worker.js',
-            'json.worker': 'monaco-editor/esm/vs/language/json/json.worker',
-            'css.worker': 'monaco-editor/esm/vs/language/css/css.worker',
-            'html.worker': 'monaco-editor/esm/vs/language/html/html.worker',
-            'typescript.worker': 'monaco-editor/esm/vs/language/typescript/ts.worker'
-          },
-          output: {
-            globalObject: 'self',
-            filename: '[name].js',
-            path: path.resolve(__dirname, 'dist', 'lib', 'monaco-editor')
-          },
-          module: {
-            rules: [{
-              test: /\.css$/,
-              use: ['style-loader', 'css-loader']
-            }]
-          }
-        }, (err, stats) => {
-          if (err) {
-            console.error(err.stack || err)
-            reject(err)
-          } else if (stats.hasErrors()) {
-            const info = stats.toJson()
-            console.error(info.errors)
-            reject(new Error(info.errors))
-          } else {
-            resolve()
-          }
-        })
-      })
-    }
-  })
+  _webpack(b, require('./monaco.webpack.config'))
 })
 
 b.task('build:demo', () => {
@@ -114,3 +72,35 @@ b.task('build:vfs', () => {
 let port = process.env['PORT'] || 4010
 b.setServerPort(port)
 b.serve({ static: true, route: '/', folder: './dist' })
+
+// bundler task for running webpack
+function _webpack (b, config) {
+  let webpack = require('webpack')
+  let dest = config.output.path
+  b.custom(`Webpack: ${dest}`, {
+    src: null,
+    dest,
+    execute () {
+      return new Promise((resolve, reject) => {
+        function _handler (err, stats) {
+          if (err) {
+            console.error(err.stack || err)
+            reject(err)
+          } else if (stats.hasErrors()) {
+            const info = stats.toJson()
+            console.error(info.errors)
+            reject(new Error(info.errors))
+          } else {
+            console.log('Finished in %s ms', stats.endTime - stats.startTime)
+            resolve()
+          }
+        }
+        if (b.opts.watch) {
+          webpack(config).watch({}, _handler)
+        } else {
+          webpack(config, _handler)
+        }
+      })
+    }
+  })
+}
