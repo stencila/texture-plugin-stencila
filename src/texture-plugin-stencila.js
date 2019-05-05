@@ -10,6 +10,7 @@ import StencilaCellConverter from './StencilaCellConverter'
 import StencilaInlineCell from './StencilaInlineCell'
 import StencilaInlineCellComponent from './StencilaInlineCellComponent'
 import StencilaInlineCellConverter from './StencilaInlineCellConverter'
+import JavascriptContextService from './jscontext/JavascriptContextService'
 
 const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
 
@@ -17,6 +18,8 @@ Texture.registerPlugin({
   name: 'stencila-plugin',
   configure (configurator) {
     let articleConfig = configurator.getConfiguration('article')
+
+    articleConfig.addService(JavascriptContextService.id, JavascriptContextService.create)
 
     // let Texture know about a JATS customization used by this plugin
     articleConfig.registerSchemaId(RDS_JATS_PUBLIC_ID)
