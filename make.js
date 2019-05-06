@@ -34,6 +34,7 @@ b.task('build:plugin', () => {
 
 b.task('build:assets', ['build:vfs'], () => {
   b.copy('./node_modules/substance-texture/dist', path.join(DIST, 'lib', 'texture'))
+  b.copy('./data', DIST)
 })
 
 b.task('build:css', () => {
