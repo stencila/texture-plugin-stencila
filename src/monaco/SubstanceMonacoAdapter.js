@@ -1,4 +1,4 @@
-import { TextOperation, last } from 'substance'
+import { TextOperation } from 'substance'
 
 import { TokenizationRegistry } from 'monaco-editor/esm/vs/editor/common/modes.js'
 import { Disposable } from 'monaco-editor/esm/vs/base/common/lifecycle.js'
