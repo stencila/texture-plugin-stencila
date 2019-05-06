@@ -22,7 +22,7 @@ export default class RunCellCommand extends Command {
     let editorSession = params.editorSession
     let commandState = params.commandState
     // TODO: the service should be language specific
-    context.config.getService(JavascriptContextService.id).then(service => {
+    context.config.getService(JavascriptContextService.id, context).then(service => {
       let cell = editorSession.getDocument().get(commandState.nodeId)
       service.requestExecution(cell.id, cell.source, (err, res) => {
         if (err) {
