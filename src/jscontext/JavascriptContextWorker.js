@@ -5,8 +5,8 @@ import * as esprima from 'esprima'
 // and clears the global scope, so that we can leave that to 'eval'
 (function () {
   let worker = self
-  let _postMessage = worker.postMessage
-  let _eval = self.eval
+  let _postMessage = worker.postMessage.bind(worker)
+  let _eval = worker.eval.bind(worker)
   worker.addEventListener('message', e => {
     let { command, args } = e.data
     if (!args) args = []
@@ -37,10 +37,11 @@ import * as esprima from 'esprima'
       program = esprima.parseScript(src, { range: true, loc: true, tolerant: true })
       if (program.errors.length > 0) {
         _postMessage({
+          id,
           errors: program.errors
         })
       } else {
-        let value = _eval.call(null, src) // eslint-disable-line no-useless-call
+        let value = _eval(src) // eslint-disable-line no-useless-call
         _postMessage({
           id,
           value
@@ -48,7 +49,8 @@ import * as esprima from 'esprima'
       }
     } catch (error) {
       _postMessage({
-        errors: [error]
+        id,
+        errors: [ { description: error.message } ]
       })
     }
   }
