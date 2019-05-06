@@ -1,7 +1,8 @@
 /* globals Worker */
 // Prototype of a Context
 export default class JavascriptContextService {
-  constructor () {
+  constructor (context = {}) {
+    this.context = context
     this.queue = []
     this.worker = null
     this.workerURL = 'lib/jscontext/worker.js'
@@ -11,8 +12,8 @@ export default class JavascriptContextService {
     return 'stencila:javascript-context'
   }
 
-  static create () {
-    return Promise.resolve(new JavascriptContextService())
+  static create (context) {
+    return Promise.resolve(new JavascriptContextService(context))
   }
 
   requestExecution (id, src, cb) {
@@ -39,6 +40,8 @@ export default class JavascriptContextService {
     this._waitForWorker = new WaitForWorker(worker)
     worker.onmessage = e => this._onWorkerMessage(e.data)
     worker.onerror = e => this._onWorkerError(e)
+    // already storing the worker so that we can use it during boot up
+    this.worker = worker
     return this._waitForWorker.getPromise()
   }
 
@@ -80,7 +83,7 @@ export default class JavascriptContextService {
       if (this.queue.length > 0) {
         let next = this.queue[0]
         this._running = true
-        this.worker.postMessage({
+        this._sendMessage('POST', {
           command: 'executeScript',
           args: {
             id: next.id,
@@ -95,19 +98,54 @@ export default class JavascriptContextService {
     if (this.worker) {
       return Promise.resolve(this.worker)
     } else {
-      return this._startWorker().then(worker => {
-        this.worker = worker
-      })
+      return this._startWorker()
     }
   }
 
   _onWorkerMessage (data) {
     if (this._waitForWorker) {
       let waitForWorker = this._waitForWorker
-      delete this._waitForWorker
-      waitForWorker.resolve()
+      // worker booting protocol:
+      // 1. launch worker
+      // 2. sync assets
+      // 3. done
+      if (waitForWorker.state === INIT) {
+        waitForWorker.state = SYNC
+        this._getAssetBlobsForSync().then(entries => {
+          this._sendMessage('POST', {
+            command: 'sync',
+            args: entries
+          })
+        })
+      } else if (waitForWorker.state === SYNC) {
+        delete this._waitForWorker
+        waitForWorker.resolve()
+      }
     } else {
       this._finishCurrentExecution(data)
+    }
+  }
+
+  _sendMessage (type, data) {
+    this.worker.postMessage(data)
+  }
+
+  _getAssetBlobsForSync () {
+    let context = this.context
+    let archive = context.archive
+    if (archive) {
+      let assets = archive.getAssetEntries()
+      assets = assets.filter(e => e.sync)
+      return Promise.all(assets.map(a => {
+        return archive.getBlob(a.path).then(data => {
+          return {
+            path: a.path,
+            data
+          }
+        })
+      }))
+    } else {
+      return Promise.resolve([])
     }
   }
 
@@ -135,8 +173,12 @@ class ExecutionRequest {
   }
 }
 
+const INIT = 0
+const SYNC = 1
+
 class WaitForWorker {
   constructor (worker) {
+    this.state = INIT
     this.worker = worker
     this.promise = new Promise((resolve, reject) => {
       this._resolve = resolve
