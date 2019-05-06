@@ -49,7 +49,7 @@ export default class StencillaCellComponent extends Component {
 
   _renderValue ($$, nodeState) {
     if (nodeState.value) {
-      return $$('div').addClass('se-value').text(nodeState.value)
+      return $$('pre').addClass('se-value').text(nodeState.value)
     }
   }
 

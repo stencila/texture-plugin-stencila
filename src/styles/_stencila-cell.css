@@ -1,7 +1,16 @@
-.sc-stencila-cell .se-error {
-  background-color: rgba(255, 0, 0, 0.5);
+
+.sc-stencila-cell .sc-code-editor {
+  padding: 10px 10px;
+  outline: solid 1px #aaa;
+  background: #fafafa;
+  font-family: monospace;
 }
 
 .sc-stencila-cell .se-value {
   white-space: pre;
+  font-family: monospace;
+}
+
+.sc-stencila-cell .se-error {
+  background-color: rgba(255, 0, 0, 0.5);
 }
