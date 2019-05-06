@@ -3,5 +3,6 @@
     <document id="manuscript" type="article" path="manuscript.xml" />
   </documents>
   <assets>
+    <asset id="icecream" type="text/csv" path="icecream.csv" sync="true"/>
   </assets>
 </dar>
