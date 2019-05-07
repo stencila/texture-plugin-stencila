@@ -30,9 +30,11 @@
 .sc-stencila-cell .se-header > * {
   display: inline-block;
   flex-grow: 0;
-  margin: 5px;
 }
 
+.sc-stencila-cell .se-header > * + * {
+  margin-left: 10px;
+}
 
 .sc-stencila-cell .se-header > .se-toggle-source {
   background: #0788D1;

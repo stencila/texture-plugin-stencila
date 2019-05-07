@@ -71,16 +71,14 @@ export default class StencillaCellComponent extends Component {
     )
     headerEl.append(toggleSource)
 
-    if (!this.state.showCode) {
-      let langEl = $$('div').addClass('se-title').text(`${this._getLangTitle()} Cell`)
-      headerEl.append(langEl)
-    }
+    let langEl = $$('div').addClass('se-title').text(`${this._getLangTitle()} Cell`)
+    headerEl.append(langEl)
 
     headerEl.append($$('span').addClass('se-spacer'))
 
     let statusEl = $$('div').addClass('se-status').append(
       $$('span').addClass('se-label').text('status'),
-      $$('span').addClass('se-status-value').addClass(`sm-${status}`).text(status)
+      $$('span').addClass('se-status-value').addClass(`sm-${status}`).text(this.getLabel(`stencila:status:${status}`))
     )
     headerEl.append(statusEl)
 
