@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/substance/texture-plugin-stencila#readme",
   "devDependencies": {
+    "chart.js": "^2.8.0",
     "css-loader": "^2.1.1",
     "esprima": "^4.0.1",
     "monaco-editor": "^0.16.2",

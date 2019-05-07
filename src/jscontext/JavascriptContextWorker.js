@@ -1,6 +1,7 @@
 /* globals self */
 import * as esprima from 'esprima'
 import VirtualWorkerFileSystem from './VirtualWorkerFileSystem'
+import * as plot from './plot/index.js'
 
 // self-calling function that is setting up the worker
 // and clears the global scope, so that we can leave that to 'eval'
@@ -98,6 +99,9 @@ import VirtualWorkerFileSystem from './VirtualWorkerFileSystem'
   // removing specific things from the global scope
   worker.postMessage = null
   worker.eval = null
+
+  // Experimental: library extensions
+  worker.plot = plot
 
   // let service know that the worker has been launched
   _postMessage({ status: 'ready' })
