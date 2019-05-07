@@ -58,13 +58,6 @@ export default class StencillaCellComponent extends Component {
     return el
   }
 
-  /**
-   * ```
-   * [ > ]    Language: R                               status: ok [10]
-   * (toggle) (language)                                (status: state + count)
-   * ```
-   * @param {Function} $$
-   */
   _renderHeader ($$) {
     let headerEl = $$('button').addClass('se-header')
       .on('click', this._toggleSourceCode)

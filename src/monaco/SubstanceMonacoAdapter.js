@@ -21,6 +21,9 @@ import createTextBuffer from './createTextBuffer'
  * This is an adapter between Substance and Monaco.
  * It maintains a Monaco text buffer, keeping it updated when the model
  * is changed.
+ *
+ * Note: unfortunately we can not just extend monaco.TextModel because it does
+ * too many undesired things in the ctor.
  */
 export default class SubstanceMonacoAdapter extends Disposable {
   constructor (editorSession, sourcePath, options = {}) {
@@ -288,7 +291,7 @@ export default class SubstanceMonacoAdapter extends Disposable {
     return rawContentChanges
   }
 
-  // EXPERIMENTAL: trying to reuse monaco implementation as good as possible
+  // Trying to reuse monaco implementation as good as possible
   // emulating a change on the monaco model, and mapping that to the substance model
   _type (ch) {
     // this resembles what Cursor._type() does
@@ -381,34 +384,6 @@ export default class SubstanceMonacoAdapter extends Disposable {
  * An assumption is that the ops are not overlapping.
  */
 function _transformNonOverlappingTextOperations (ops) {
-  // Note: this is an interesting experiment, but not necessary in the current use-case
-  // here it would be sufficient to sort descending and do deletes before inserts at the same pos
-  // let deltas = []
-  // function _addDelta (offset, delta) {
-  //   let insertPos = deltas.findIndex(e => e.offset > offset)
-  //   if (insertPos === -1) insertPos = deltas.length
-  //   deltas.splice(insertPos, 0, { offset, delta })
-  // }
-  // function _getDelta (offset) {
-  //   let boundary = deltas.findIndex(e => e.offset >= offset)
-  //   let delta = 0
-  //   for (let idx = 0; idx < boundary; idx++) {
-  //     delta += deltas[idx].delta
-  //   }
-  //   return delta
-  // }
-  // // sort ops in ascending order
-  // ops.sort((a, b) => a.pos - b.pos)
-  // for (let op of ops) {
-  //   if (op.isInsert()) {
-  //     _addDelta(op.pos, op.getLength())
-  //   } else if (op.isDelete()) {
-  //     _addDelta(op.pos, -op.getLength())
-  //   }
-  //   op.pos += _getDelta(op.pos)
-  // }
-  // return ops
-
   // sorting in ascending order, but doing delete before insert if at the same position
   ops.sort((a, b) => {
     if (a.pos < b.pos) {
