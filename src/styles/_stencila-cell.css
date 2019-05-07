@@ -1,16 +1,76 @@
+.sc-stencila-cell {
+  font-family: monospace;
+}
 
 .sc-stencila-cell .sc-code-editor {
   padding: 10px 10px;
-  outline: solid 1px #aaa;
+  outline: solid 1px #ddd;
   background: #fafafa;
-  font-family: monospace;
 }
 
-.sc-stencila-cell .se-value {
+.sc-stencila-cell > .se-value {
+  padding: 10px 10px;
   white-space: pre;
-  font-family: monospace;
 }
 
-.sc-stencila-cell .se-error {
+.sc-stencila-cell > .se-errors > .se-error {
+  padding: 10px 10px;
+  white-space: pre;
   background-color: rgba(255, 0, 0, 0.5);
+}
+
+.sc-stencila-cell .se-header {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: 5px;
+  align-items: space-between;
+}
+
+.sc-stencila-cell .se-header > * {
+  display: inline-block;
+  flex-grow: 0;
+  margin: 5px;
+}
+
+
+.sc-stencila-cell .se-header > .se-toggle-source {
+  background: #0788D1;
+  color: white;
+  border-radius: 2px;
+  padding: 1px;
+  min-width: 18px;
+  text-align: center;
+}
+
+.sc-stencila-cell .se-header > .se-spacer {
+  flex-grow: 1;
+}
+
+.sc-stencila-cell .se-header .se-label {
+  color: #ccc;
+}
+
+.sc-stencila-cell .se-header .se-title {
+  color: #ccc;
+}
+
+.sc-stencila-cell .se-header .se-label::after {
+  content: ':'
+}
+
+.sc-stencila-cell .se-header .se-status .se-status-value.sm-ok {
+  color: green;
+}
+
+.sc-stencila-cell .se-header .se-status .se-status-value.sm-error {
+  color: red;
+}
+
+.sc-stencila-cell .se-header .se-status .se-status-value.sm-not-evaluated {
+  color: #ccc;
+}
+
+.sc-stencila-cell .se-header .se-status .se-count {
+  color: #ccc;
 }

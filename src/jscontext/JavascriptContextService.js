@@ -6,6 +6,7 @@ export default class JavascriptContextService {
     this.queue = []
     this.worker = null
     this.workerURL = 'lib/jscontext/worker.js'
+    this._executionCounter = 0
   }
 
   static get id () {
@@ -21,14 +22,14 @@ export default class JavascriptContextService {
     let existing = this.queue.findIndex(r => r.id === id)
     let triggerNext = this.queue.length === 0
     if (existing >= 0) {
-      if (existing === 0) {
-        console.log('.. cancelling already running request', id)
-        triggerNext = true
-        this._cancelCurrentExecution()
-      }
       this.queue.splice(existing, 1)
+      // skipping the current request. Note, that is not possible
+      // to interrupt already started execution
+      // The only way is to restart the jscontext, but then all
+      // computed data is lost as well.
+      return
     }
-    this.queue.push(new ExecutionRequest(id, src, cb))
+    this.queue.push(new ExecutionRequest(id, this._executionCounter++, src, cb))
     if (triggerNext) {
       this._triggerNextExecution()
     }
@@ -45,30 +46,31 @@ export default class JavascriptContextService {
     return this._waitForWorker.getPromise()
   }
 
-  _cancelCurrentExecution () {
-    if (this.worker) {
-      this.worker.terminate()
-      this.worker = null
-    }
-  }
-
   _finishCurrentExecution (data) {
     console.log('Javascript._finishCurrentExecution()', data)
     this._running = false
     // if an error occurs the whole execution is halted
-    let req = this.queue.shift()
-    if (data.errors) {
-      console.error('Errors:', data.errors)
+    let request = this.queue.shift()
+    let status = data.errors ? 'error' : 'ok'
+    let response = {
+      id: request.id,
+      count: request.executionCount,
+      errors: data.errors,
+      value: data.value,
+      log: data.log,
+      status
+    }
+    if (response.errors) {
+      console.error('Errors:', response.errors)
       // clearing the queue because we do not want to continue if one cell
       // has errored
       this.queue.length = 0
       // TODO: we should normalize the error format here
-      let err = new Error('Errors during execution of ' + data.id)
-      err.errors = data.errors
-      req.cb(err)
+      let err = new Error('Errors during execution of ' + response.id)
+      err.errors = response.errors
+      request.cb(err, response)
     } else {
-      // TODO: also needs specification
-      req.cb(null, data)
+      request.cb(null, response)
       if (this.queue.length > 0) {
         this._triggerNextExecution()
       }
@@ -105,10 +107,7 @@ export default class JavascriptContextService {
   _onWorkerMessage (data) {
     if (this._waitForWorker) {
       let waitForWorker = this._waitForWorker
-      // worker booting protocol:
-      // 1. launch worker
-      // 2. sync assets
-      // 3. done
+      // worker booting protocol: launch worker then sync assets
       if (waitForWorker.state === INIT) {
         waitForWorker.state = SYNC
         this._getAssetBlobsForSync().then(entries => {
@@ -166,8 +165,9 @@ export default class JavascriptContextService {
 }
 
 class ExecutionRequest {
-  constructor (id, src, cb) {
-    this.id = id
+  constructor (cellId, executionCount, src, cb) {
+    this.id = cellId
+    this.executionCount = executionCount
     this.src = src
     this.cb = cb
   }

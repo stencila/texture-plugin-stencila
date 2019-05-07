@@ -26,10 +26,10 @@ export default class RunCellCommand extends Command {
       let cell = editorSession.getDocument().get(commandState.nodeId)
       service.requestExecution(cell.id, cell.source, (err, res) => {
         if (err) {
-          // TODO: define the interface properly
-          editorSession.updateNodeStates([[cell.id, { value: undefined, errors: err.errors }]], { propagate: true })
+          // TODO: do we really need this kind of call back, or would just 'res' be ok?
+          editorSession.updateNodeStates([[cell.id, res]], { propagate: true })
         } else {
-          editorSession.updateNodeStates([[cell.id, { value: res.value, errors: null }]], { propagate: true })
+          editorSession.updateNodeStates([[cell.id, res]], { propagate: true })
         }
       })
     })

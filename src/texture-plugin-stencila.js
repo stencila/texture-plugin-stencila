@@ -47,5 +47,10 @@ Texture.registerPlugin({
     articleManuscriptConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand)
 
     articleManuscriptConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCellCommand.id })
+
+    articleManuscriptConfig.addLabel('stencila:language', 'Language')
+    articleManuscriptConfig.addLabel('stencila:not-evaluated', 'not evaluated')
+    articleManuscriptConfig.addIcon('stencila:expand-code', { 'fontawesome': 'fa-angle-right' })
+    articleManuscriptConfig.addIcon('stencila:collapse-code', { 'fontawesome': 'fa-angle-down' })
   }
 })
