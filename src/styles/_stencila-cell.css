@@ -76,3 +76,11 @@
 .sc-stencila-cell .se-header .se-status .se-count {
   color: #ccc;
 }
+
+.sc-stencila-cell .se-value.sm-hidden {
+  display: none;
+}
+
+.sc-stencila-cell .se-value img {
+  max-width: 100%;
+}
