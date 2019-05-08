@@ -1,9 +1,9 @@
-import { Command } from 'substance'
+import StencilaCommand from './_StencilaCommand'
 import StencilaCell from './StencilaCell'
 import StencilaInlineCell from './StencilaInlineCell'
-import JavascriptContextService from './jscontext/JavascriptContextService'
+import StencilaCellService from './StencilaCellService'
 
-export default class RunCellCommand extends Command {
+export default class RunCellCommand extends StencilaCommand {
   static get id () { return 'stencila:run-cell' }
 
   getCommandState (params, context) {
@@ -19,19 +19,9 @@ export default class RunCellCommand extends Command {
   }
 
   execute (params, context) {
-    let editorSession = params.editorSession
     let commandState = params.commandState
-    // TODO: the service should be language specific
-    context.config.getService(JavascriptContextService.id, context).then(service => {
-      let cell = editorSession.getDocument().get(commandState.nodeId)
-      service.requestExecution(cell.id, cell.source, (err, res) => {
-        if (err) {
-          // TODO: do we really need this kind of call back, or would just 'res' be ok?
-          editorSession.updateNodeStates([[cell.id, res]], { propagate: true })
-        } else {
-          editorSession.updateNodeStates([[cell.id, res]], { propagate: true })
-        }
-      })
+    context.config.getService(StencilaCellService.id, context).then(service => {
+      service.runCell(commandState.nodeId)
     })
   }
 }

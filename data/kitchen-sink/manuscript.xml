@@ -12,15 +12,15 @@
   <body>
     <p>ABCDEFG</p>
     <stencila:cell>
-      <stencila:source><![CDATA[data = readFile('icecream.csv')]]></stencila:source>
+      <stencila:source><![CDATA[icecream = readFile('icecream.csv')]]></stencila:source>
     </stencila:cell>
     <p>ABCDEFG</p>
     <stencila:cell>
-      <stencila:source><![CDATA[data2 = table.fromCSV(data).select('income', 'temp')]]></stencila:source>
+      <stencila:source><![CDATA[selectedData = table.fromCSV(icecream).select('income', 'temp')]]></stencila:source>
     </stencila:cell>
     <p>ABCDEFG</p>
     <stencila:cell>
-      <stencila:source><![CDATA[plot.scatterPlot(data2)]]></stencila:source>
+      <stencila:source><![CDATA[plot.scatterPlot(selectedData)]]></stencila:source>
     </stencila:cell>
     <p>ABCDEFG</p>
     <stencila:cell>

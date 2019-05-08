@@ -60,20 +60,14 @@ export default class JavascriptContextService {
       log: data.log,
       status
     }
+    request.cb(response)
     if (response.errors) {
       console.error('Errors:', response.errors)
       // clearing the queue because we do not want to continue if one cell
       // has errored
       this.queue.length = 0
-      // TODO: we should normalize the error format here
-      let err = new Error('Errors during execution of ' + response.id)
-      err.errors = response.errors
-      request.cb(err, response)
-    } else {
-      request.cb(null, response)
-      if (this.queue.length > 0) {
-        this._triggerNextExecution()
-      }
+    } else if (this.queue.length > 0) {
+      this._triggerNextExecution()
     }
   }
 

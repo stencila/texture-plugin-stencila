@@ -1,6 +1,4 @@
-import {
-  Texture, ArticleJATSImporter, ArticleJATSExporter
-} from 'texture'
+import { Texture } from 'texture'
 import CodeEditor from './code-editor/CodeEditor'
 import RunCellCommand from './RunCellCommand'
 import RunAllCellsCommand from './RunAllCellsCommand'
@@ -10,7 +8,10 @@ import StencilaCellConverter from './StencilaCellConverter'
 import StencilaInlineCell from './StencilaInlineCell'
 import StencilaInlineCellComponent from './StencilaInlineCellComponent'
 import StencilaInlineCellConverter from './StencilaInlineCellConverter'
+import StencilaCellService from './StencilaCellService'
 import JavascriptContextService from './jscontext/JavascriptContextService'
+import StencilaArticleJATSImporter from './StencilaArticleJATSImporter'
+import StencilaArticleJATSExporter from './StencilaArticleJATSExporter'
 
 const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
 
@@ -19,6 +20,7 @@ Texture.registerPlugin({
   configure (configurator) {
     let articleConfig = configurator.getConfiguration('article')
 
+    articleConfig.addService(StencilaCellService.id, StencilaCellService.create)
     articleConfig.addService(JavascriptContextService.id, JavascriptContextService.create)
 
     // let Texture know about a JATS customization used by this plugin
@@ -30,11 +32,11 @@ Texture.registerPlugin({
     // register converters for custom elements
     articleConfig.addConverter(RDS_JATS_PUBLIC_ID, StencilaCellConverter)
     articleConfig.addConverter(RDS_JATS_PUBLIC_ID, StencilaInlineCellConverter)
-    articleConfig.addImporter(RDS_JATS_PUBLIC_ID, ArticleJATSImporter, {
+    articleConfig.addImporter(RDS_JATS_PUBLIC_ID, StencilaArticleJATSImporter, {
       converterGroups: ['jats', RDS_JATS_PUBLIC_ID]
     })
     // register a factory for an exporter
-    articleConfig.addExporter(RDS_JATS_PUBLIC_ID, ArticleJATSExporter, {
+    articleConfig.addExporter(RDS_JATS_PUBLIC_ID, StencilaArticleJATSExporter, {
       converterGroups: ['jats', RDS_JATS_PUBLIC_ID]
     })
     // add commands and components to the article manuscript configuration
@@ -43,16 +45,41 @@ Texture.registerPlugin({
     articleManuscriptConfig.addComponent(StencilaCell.type, StencilaCellComponent)
     articleManuscriptConfig.addComponent(StencilaInlineCell.type, StencilaInlineCellComponent)
     // TODO: these commands should only be activated when the doc is a RDS article
-    articleManuscriptConfig.addCommand(RunCellCommand.id, RunCellCommand)
-    articleManuscriptConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand)
+    articleManuscriptConfig.addCommand(RunCellCommand.id, RunCellCommand, { commandGroup: 'stencila:cells' })
+    articleManuscriptConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand, { commandGroup: 'stencila:cells' })
 
     articleManuscriptConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCellCommand.id })
 
+    articleManuscriptConfig.addLabel('stencila:cell-tools', 'Cell')
+    articleManuscriptConfig.addLabel('stencila:run-cell', 'Run Cell')
     articleManuscriptConfig.addLabel('stencila:language', 'Language')
     articleManuscriptConfig.addLabel('stencila:status:ok', 'ok')
     articleManuscriptConfig.addLabel('stencila:status:not-evaluated', 'not evaluated')
     articleManuscriptConfig.addLabel('stencila:status:error', 'error')
+
     articleManuscriptConfig.addIcon('stencila:expand-code', { 'fontawesome': 'fa-angle-right' })
     articleManuscriptConfig.addIcon('stencila:collapse-code', { 'fontawesome': 'fa-angle-down' })
+
+    // EXPERiMENTAL: we do not have an easy way to extend the toolbar et al.
+    // for now this is a bit low-levelish until we understand better what we need
+    articleManuscriptConfig.extendToolPanel('toolbar', toolPanelConfig => {
+      let contextTools = toolPanelConfig.find(group => group.name === 'context-tools')
+      if (contextTools) {
+        contextTools.items.push({
+          type: 'group',
+          name: 'stencila:cells',
+          style: 'descriptive',
+          label: 'stencila:cell-tools',
+          items: [
+            { type: 'command-group', name: 'stencila:cells' }
+          ]
+        })
+      }
+    })
+    articleManuscriptConfig.extendToolPanel('context-menu', toolPanelConfig => {
+      toolPanelConfig[0].items.push(
+        { type: 'command-group', name: 'stencila:cells' }
+      )
+    })
   }
 })
