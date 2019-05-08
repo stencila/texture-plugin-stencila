@@ -16,13 +16,11 @@
     </stencila:cell>
     <p>ABCDEFG</p>
     <stencila:cell>
-      <stencila:source><![CDATA[data]]></stencila:source>
+      <stencila:source><![CDATA[data2 = table.fromCSV(data).select('income', 'temp')]]></stencila:source>
     </stencila:cell>
     <p>ABCDEFG</p>
     <stencila:cell>
-      <stencila:source><![CDATA[function foo (a, b) {
-  return a * b
-}]]></stencila:source>
+      <stencila:source><![CDATA[plot.scatterPlot(data2)]]></stencila:source>
     </stencila:cell>
     <p>ABCDEFG</p>
     <stencila:cell>

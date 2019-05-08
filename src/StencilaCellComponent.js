@@ -108,18 +108,30 @@ export default class StencillaCellComponent extends Component {
     // TODO: specify which result value types are supported and how to be represented
     if (value) {
       if (isPlainObject(value)) {
-        if (value.type === 'blob') {
-          if (value.mimeType && value.mimeType.startsWith('image')) {
-            valueEl.append(
-              $$(ImageComponent, { value })
-            )
-          } else {
-            valueEl.append('Unknown blob type')
+        switch (value.type) {
+          case 'blob': {
+            if (value.mimeType && value.mimeType.startsWith('image')) {
+              valueEl.append(
+                $$(ImageComponent, { value })
+              )
+            } else {
+              valueEl.append('Unknown blob type')
+            }
+            break
           }
-        } else {
-          valueEl.append(
-            $$('pre').text(JSON.stringify(value, null, 2))
-          )
+          case 'html': {
+            // TODO: prevent HTML injection by stripping
+            if (value.html && value.html.indexOf(/[<]\s*script/) > -1) {
+              throw new Error('Dangerous HTML is prohibited')
+            }
+            valueEl.html(value.html)
+            break
+          }
+          default: {
+            valueEl.append(
+              $$('pre').text(JSON.stringify(value, null, 2))
+            )
+          }
         }
       } else {
         valueEl.append(

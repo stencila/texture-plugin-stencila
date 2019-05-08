@@ -1,7 +1,8 @@
 /* globals self */
 import * as esprima from 'esprima'
 import VirtualWorkerFileSystem from './VirtualWorkerFileSystem'
-import * as plot from './plot/index.js'
+import * as plot from './plot/plot.js'
+import * as table from './table/table.js'
 
 // self-calling function that is setting up the worker
 // and clears the global scope, so that we can leave that to 'eval'
@@ -66,7 +67,7 @@ import * as plot from './plot/index.js'
           result.then(value => {
             _postMessage({
               id,
-              value
+              value: _transformValue(value)
             })
           }).catch(error => {
             _postMessage({
@@ -77,7 +78,7 @@ import * as plot from './plot/index.js'
         } else {
           _postMessage({
             id,
-            value: result
+            value: _transformValue(result)
           })
         }
       }
@@ -86,6 +87,20 @@ import * as plot from './plot/index.js'
         id,
         errors: [ { description: error.message } ]
       })
+    }
+  }
+
+  function _transformValue (value) {
+    if (value) {
+      if (value.toHTML) {
+        let html = value.toHTML()
+        return {
+          type: 'html',
+          html
+        }
+      } else {
+        return value
+      }
     }
   }
 
@@ -102,6 +117,7 @@ import * as plot from './plot/index.js'
 
   // Experimental: library extensions
   worker.plot = plot
+  worker.table = table
 
   // let service know that the worker has been launched
   _postMessage({ status: 'ready' })
