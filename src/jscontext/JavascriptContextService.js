@@ -35,6 +35,10 @@ export default class JavascriptContextService {
     }
   }
 
+  clearQueue () {
+    this.queue.length = 0
+  }
+
   _startWorker () {
     // TODO: this URL should be configurable
     let worker = new Worker(this.workerURL)
