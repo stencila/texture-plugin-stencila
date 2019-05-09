@@ -1,8 +1,8 @@
 import { Command } from 'substance'
-import _shouldBeEnabled from './_shouldBeEnabled'
+import _isStencilaEnabled from './_isStencilaEnabled'
 
 export default class StencilaCommand extends Command {
   shouldBeEnabled (context) {
-    return _shouldBeEnabled(context)
+    return _isStencilaEnabled(context)
   }
 }

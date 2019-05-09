@@ -4,8 +4,6 @@ import VirtualWorkerFileSystem from './VirtualWorkerFileSystem'
 import * as plot from './plot/plot.js'
 import * as table from './table/table.js'
 
-// self-calling function that is setting up the worker
-// and clears the global scope, so that we can leave that to 'eval'
 (function () {
   let worker = self
   let _postMessage = worker.postMessage.bind(worker)
@@ -33,7 +31,7 @@ import * as table from './table/table.js'
         _initializeFileSystem(args)
         break
       }
-      case 'executeScript': {
+      case 'execute': {
         executeScript(args)
         break
       }
@@ -106,9 +104,7 @@ import * as table from './table/table.js'
 
   function _initializeFileSystem (entries) {
     entries.forEach(({ path, data }) => _fs.writeFile(path, data))
-    _postMessage({
-      'status': 'fs-ready'
-    })
+    _postMessage('ack')
   }
 
   // removing specific things from the global scope
@@ -120,5 +116,5 @@ import * as table from './table/table.js'
   worker.table = table
 
   // let service know that the worker has been launched
-  _postMessage({ status: 'ready' })
+  _postMessage('ack')
 })()

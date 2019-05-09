@@ -10,7 +10,7 @@ b.task('clean', function () {
   b.rm(TMP)
 }).describe('removes all generated files and folders.')
 
-b.task('build', ['clean', 'build:assets', 'build:monaco', 'build:demo', 'build:plugin', 'build:css', 'build:js-context-worker'])
+b.task('build', ['clean', 'build:assets', 'build:monaco', 'build:demo', 'build:plugin', 'build:css', 'build:javascript-runtime-worker'])
   .describe('builds the library bundle.')
 
 b.task('default', ['clean', 'build'])
@@ -45,7 +45,7 @@ b.task('build:monaco', () => {
   _webpack(b, require('./monaco.webpack.config'))
 })
 
-b.task('build:js-context-worker', () => {
+b.task('build:javascript-runtime-worker', () => {
   _webpack(b, require('./jsruntime.webpack.config'))
 })
 

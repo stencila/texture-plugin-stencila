@@ -9,6 +9,26 @@ export class AbstractRuntimeService {
     this.evalCounter = 0
   }
 
+  /**
+   * Sends a (HTTP) request to the backend
+   *
+   * Requesting code execution:
+   * ```
+   * POST execute { id, source }
+   * { id, error, value }
+   * ```
+   * > TODO: discuss if this is sufficient
+   *
+   * Sending content from the DAR that should be saved in the backend's file-system
+   * to allow reading and processing that content.
+   * ```
+   * POST sync [{ path, data }...] }
+   * ```
+   * > TODO: discuss if this is sufficient
+   *
+   * @param {string} type HTTP message type
+   * @param {object} data tha payload send with the request
+   */
   _sendMessage (type, data) {
     throw new Error('This method is abstract.')
   }
@@ -23,6 +43,8 @@ export class AbstractRuntimeService {
 
   /**
    * Request execution of a cell with a given id and source.
+   *
+   * This is called by StencillaCellService.
    *
    * @param {string} id the cell id
    * @param {string} src the cell's source
@@ -49,16 +71,35 @@ export class AbstractRuntimeService {
 
   /**
    * Removes all pending execution requests from the queue
+   *
+   * This is called by StencillaCellService.
    */
   clearQueue () {
     this.queue.length = 0
   }
 
+  /**
+   * Starts the backend initialisation protocol.
+   *
+   * @param {any} backend
+   */
   _waitForBackend (backend) {
-    this.waitForBackend = new WaitForBackend(backend)
-    return this.waitForBackend.promise
+    this._backendBootupSequence = new BackendBootupSequence(backend)
+    return this._backendBootupSequence.promise
   }
 
+  /**
+   * Processes a response coming back from the backend.
+   *
+   * ```
+   * {
+   *   id: request id (typically the cell id),
+   *   error: an error (to be specified) or undefined
+   *   value: a result value (string or object to be specifed) or undefined
+   * }
+   * ```
+   * @param {object} data
+   */
   _finishRequest (data) {
     this._running = false
     // if an error occurs the whole execution is halted
@@ -71,9 +112,8 @@ export class AbstractRuntimeService {
     }
     request.cb(response)
     if (response.error) {
-      console.error('Errors:', response.error)
-      // clearing the queue because we do not want to continue if one cell
-      // has errored
+      console.error('Error:', response.error)
+      // clearing the queue because we do not want to continue if one cell has errored
       this.queue.length = 0
     } else if (this.queue.length > 0) {
       this._triggerNextExecution()
@@ -89,7 +129,7 @@ export class AbstractRuntimeService {
         let next = this.queue[0]
         this._running = true
         this._sendMessage('POST', {
-          command: 'executeScript',
+          command: 'execute',
           args: {
             id: next.id,
             src: next.src
@@ -119,20 +159,24 @@ export class AbstractRuntimeService {
   }
 
   _onResponse (data) {
-    if (this.waitForBackend) {
-      let waitForBackend = this.waitForBackend
+    // TODO: this is implementing the boot-up protocol which we need to formalize
+    // ATM, it is assumed that the backend is initialized, coming back with a non-error response
+    // after that files from the DAR are send over to the backend, so that these
+    // are available for reading and processing
+    if (this._backendBootupSequence) {
+      let backendBootupSequence = this._backendBootupSequence
       // worker booting protocol: launch worker then sync assets
-      if (waitForBackend.state === INIT) {
-        waitForBackend.state = SYNC
+      if (backendBootupSequence.state === INIT) {
+        backendBootupSequence.state = SYNC
         this._getAssetBlobsForSync().then(entries => {
           this._sendMessage('POST', {
             command: 'sync',
             args: entries
           })
         })
-      } else if (waitForBackend.state === SYNC) {
-        delete this.waitForBackend
-        waitForBackend.resolve()
+      } else if (backendBootupSequence.state === SYNC) {
+        delete this._backendBootupSequence
+        backendBootupSequence.resolve()
       }
     } else {
       this._finishRequest(data)
@@ -140,18 +184,22 @@ export class AbstractRuntimeService {
   }
 
   _onError (e) {
-    if (this.waitForBackend) {
+    if (this._backendBootupSequence) {
       console.error('Could not start worker')
       // TODO: we could also leave the waitForBackend there
       // as a blocker for upcoming requests
       // and only remove it when a restart is explicitly asked for
-      let waitForBackend = this.waitForBackend
-      delete this.waitForBackend
+      let waitForBackend = this._backendBootupSequence
+      delete this._backendBootupSequence
       waitForBackend.reject(e)
     } else {
       // TODO: what to do here? should we stop the worker?
       console.error(e)
     }
+  }
+
+  _isBootingBackend () {
+    return Boolean(this._backendBootupSequence)
   }
 }
 
@@ -167,7 +215,7 @@ class ExecutionRequest {
 const INIT = 0
 const SYNC = 1
 
-export class WaitForBackend {
+export class BackendBootupSequence {
   constructor (backend) {
     this.state = INIT
     this.backend = backend
@@ -178,8 +226,8 @@ export class WaitForBackend {
   }
 
   static create (backend) {
-    let waitForBackend = new WaitForBackend(backend)
-    return waitForBackend.promise
+    let boot = new BackendBootupSequence(backend)
+    return boot.promise
   }
 
   resolve () {
