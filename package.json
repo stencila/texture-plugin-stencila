@@ -4,7 +4,7 @@
   "description": "Texture plugin for Stencila",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node make -w -s"
   },
   "repository": {
     "type": "git",
