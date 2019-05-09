@@ -7,3 +7,7 @@
 .sc-stencila-inline-cell.sm-error {
   color: var(--t-error-text-color);
 }
+
+.sc-stencila-inline-cell.sm-not-evaluated {
+  color: var(--t-placeholder-text-color);
+}

@@ -24,12 +24,15 @@
   display: flex;
   flex-direction: row;
   margin-bottom: var(--t-input-padding);
-  align-items: space-between;
 }
 
 .sc-stencila-cell .se-header > * {
   display: inline-block;
   flex-grow: 0;
+}
+
+.sc-stencila-cell .se-header > .se-spacer {
+  flex-grow: 1;
 }
 
 .sc-stencila-cell .se-header > * + * {
@@ -43,10 +46,6 @@
   padding: 1px;
   min-width: var(--t-text-font-size);
   text-align: center;
-}
-
-.sc-stencila-cell .se-header > .se-spacer {
-  flex-grow: 1;
 }
 
 .sc-stencila-cell .se-header .se-label,

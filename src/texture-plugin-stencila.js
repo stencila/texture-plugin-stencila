@@ -12,8 +12,6 @@ import StencilaCellService from './StencilaCellService'
 import JavascriptRuntimeService from './jsruntime/JavascriptRuntimeService'
 import StencilaArticleJATSImporter from './StencilaArticleJATSImporter'
 import StencilaArticleJATSExporter from './StencilaArticleJATSExporter'
-import EditInlineCellCommand from './EditInlineCellCommand';
-import EditInlineCellTool from './EditInlineCellTool';
 
 const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
 
@@ -45,15 +43,12 @@ Texture.registerPlugin({
     // add commands and components to the article manuscript configuration
     let articleManuscriptConfig = configurator.getConfiguration('article.manuscript')
 
-    // TODO: these commands should only be activated when the doc is a RDS article
     articleManuscriptConfig.addCommand(RunCellCommand.id, RunCellCommand, { commandGroup: 'stencila:cells' })
     articleManuscriptConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand, { commandGroup: 'stencila:cells' })
-    articleManuscriptConfig.addCommand(EditInlineCellCommand.id, EditInlineCellCommand, { nodeType: StencilaInlineCell.type, commandGroup: 'prompt' })
 
     articleManuscriptConfig.addComponent('code-editor', CodeEditor)
     articleManuscriptConfig.addComponent(StencilaCell.type, StencilaCellComponent)
     articleManuscriptConfig.addComponent(StencilaInlineCell.type, StencilaInlineCellComponent)
-    articleManuscriptConfig.addComponent(EditInlineCellCommand.id, EditInlineCellTool)
 
     articleManuscriptConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCellCommand.id })
 
