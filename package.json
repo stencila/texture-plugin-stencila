@@ -4,7 +4,7 @@
   "description": "Texture plugin for Stencila",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node make -w -s"
   },
   "repository": {
     "type": "git",
@@ -24,7 +24,7 @@
     "style-loader": "^0.23.1",
     "substance-bundler": "0.25.5",
     "substance-test": "0.13.2",
-    "substance-texture": "substance/texture",
+    "substance-texture": "2.3.0-plugin-support-0.1",
     "webpack": "^4.30.0"
   },
   "peerDependencies": {
