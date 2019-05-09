@@ -1,0 +1,9 @@
+.sc-stencila-inline-cell {
+  font-family: monospace, monospace;
+  /* border-bottom: 1px solid var(--t-action-color); */
+  color: var(--t-action-color);
+}
+
+.sc-stencila-inline-cell.sm-error {
+  color: var(--t-error-text-color);
+}
