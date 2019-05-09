@@ -13,7 +13,7 @@
   white-space: pre;
 }
 
-.sc-stencila-cell > .se-errors > .se-error {
+.sc-stencila-cell > .se-error {
   padding: 10px 10px;
   white-space: pre;
   background-color: rgba(255, 0, 0, 0.5);
@@ -73,7 +73,7 @@
   color: #ccc;
 }
 
-.sc-stencila-cell .se-header .se-status .se-count {
+.sc-stencila-cell .se-header .se-status .se-eval-counter {
   color: #ccc;
 }
 

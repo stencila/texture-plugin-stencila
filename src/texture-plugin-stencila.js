@@ -9,7 +9,7 @@ import StencilaInlineCell from './StencilaInlineCell'
 import StencilaInlineCellComponent from './StencilaInlineCellComponent'
 import StencilaInlineCellConverter from './StencilaInlineCellConverter'
 import StencilaCellService from './StencilaCellService'
-import JavascriptContextService from './jscontext/JavascriptContextService'
+import JavascriptRuntimeService from './jsruntime/JavascriptRuntimeService'
 import StencilaArticleJATSImporter from './StencilaArticleJATSImporter'
 import StencilaArticleJATSExporter from './StencilaArticleJATSExporter'
 
@@ -21,7 +21,8 @@ Texture.registerPlugin({
     let articleConfig = configurator.getConfiguration('article')
 
     articleConfig.addService(StencilaCellService.id, StencilaCellService.create)
-    articleConfig.addService(JavascriptContextService.id, JavascriptContextService.create)
+    articleConfig.addService(JavascriptRuntimeService.id, JavascriptRuntimeService.create)
+    // TODO register more runtime services, or a universal StencilaRuntimeService
 
     // let Texture know about a JATS customization used by this plugin
     articleConfig.registerSchemaId(RDS_JATS_PUBLIC_ID)

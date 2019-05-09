@@ -1,5 +1,3 @@
-import JavascriptContextService from './jscontext/JavascriptContextService'
-
 export default class StencileCellService {
   constructor (context) {
     this.context = context
@@ -41,12 +39,17 @@ export default class StencileCellService {
   }
 
   _getLanguageService () {
+    return this.context.config.getService(`stencila:runtime:${this._getLang()}`, this.context)
+  }
+
+  _getLang () {
     // TODO: language should come from article
-    return this.context.config.getService(JavascriptContextService.id, this.context)
+    return 'javascript'
   }
 
   _onResult (res) {
     // TODO: do we really need this kind of call back, or would just 'res' be ok?
+    res.status = res.error ? 'error' : 'ok'
     this.editorSession.updateNodeStates([[res.id, res]], { propagate: true })
   }
 }

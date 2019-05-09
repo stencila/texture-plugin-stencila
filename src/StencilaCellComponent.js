@@ -43,9 +43,9 @@ export default class StencillaCellComponent extends Component {
       )
     }
 
-    if (nodeState.errors && nodeState.errors.length > 0) {
+    if (nodeState.error) {
       el.append(
-        this._renderErrors($$, nodeState.errors)
+        this._renderError($$, nodeState.error)
       )
     }
 
@@ -82,25 +82,18 @@ export default class StencillaCellComponent extends Component {
     )
     headerEl.append(statusEl)
 
-    if (nodeState.hasOwnProperty('count')) {
-      let countEl = $$('div').addClass('se-count').append(
-        $$('span').addClass('se-count').text(`[${nodeState.count}]`)
-      )
-      headerEl.append(countEl)
+    if (nodeState.hasOwnProperty('evalCounter')) {
+      let evalCounterEl = $$('div').addClass('se-eval-counter').text(`[${nodeState.evalCounter}]`)
+      headerEl.append(evalCounterEl)
     }
 
     return headerEl
   }
 
-  _renderErrors ($$, errors) {
-    let errorsEl = $$('div').addClass('se-errors')
-    errorsEl.append(
-      errors.map(err => {
-        // TODO: we have to specify a common format for errors
-        return $$('div').addClass('se-error').text(err.description)
-      })
-    )
-    return errorsEl
+  _renderError ($$, error) {
+    if (error) {
+      return $$('div').addClass('se-error').text(error.description)
+    }
   }
 
   _renderValue ($$, value) {

@@ -46,7 +46,7 @@ b.task('build:monaco', () => {
 })
 
 b.task('build:js-context-worker', () => {
-  _webpack(b, require('./jscontext.webpack.config'))
+  _webpack(b, require('./jsruntime.webpack.config'))
 })
 
 b.task('build:demo', () => {
