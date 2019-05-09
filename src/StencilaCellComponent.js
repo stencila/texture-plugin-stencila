@@ -1,10 +1,5 @@
 import { Component, isPlainObject } from 'substance'
 
-/**
- * Re-implementing a similar UI as promoted in the RDS stack prototype
- * but using a REPL like Notebook mechanism (as opposed to reactive computation).
- */
-
 export default class StencillaCellComponent extends Component {
   didMount () {
     this.context.appState.addObserver(['document'], this._onNodeUpdate, this, {

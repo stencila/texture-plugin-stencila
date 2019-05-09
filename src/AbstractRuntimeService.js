@@ -139,6 +139,16 @@ export class AbstractRuntimeService {
     })
   }
 
+  /**
+   * A helper that retrieves all assets from the DAR that are marked with @sync
+   * TODO: we should discuss if @sync is good enough. IMO, it would be the technically
+   * easiest way to denote explicitly which assets should be synchronized,
+   * as opposed to guessing or sending syncing all assets. Note, that there might unneeded assets, such as images, or even videos.
+   * An idea for authoring from scratch could be, that the UI suggests to enable syncing when
+   * an error has occurred coming from a failed try to load the file remotely.
+   * Soon we will introduce a DAR browser, where this could be managed directly.
+   * For the time being, @sync needs to be added to the DAR manually.
+   */
   _getAssetBlobsForSync () {
     let context = this.context
     let archive = context.archive

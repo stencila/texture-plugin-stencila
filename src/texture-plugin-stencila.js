@@ -62,8 +62,9 @@ Texture.registerPlugin({
     articleManuscriptConfig.addIcon('stencila:expand-code', { 'fontawesome': 'fa-angle-right' })
     articleManuscriptConfig.addIcon('stencila:collapse-code', { 'fontawesome': 'fa-angle-down' })
 
-    // EXPERiMENTAL: we do not have an easy way to extend the toolbar et al.
-    // for now this is a bit low-levelish until we understand better what we need
+    // EXPERIMENTAL: we do not have an easy way to extend the toolbar et al.
+    // for now this is needs understanding of the internal toolpanel layout
+    // until we understand better what we need
     articleManuscriptConfig.extendToolPanel('toolbar', toolPanelConfig => {
       let contextTools = toolPanelConfig.find(group => group.name === 'context-tools')
       if (contextTools) {
