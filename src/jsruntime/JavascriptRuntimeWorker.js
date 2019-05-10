@@ -47,7 +47,7 @@ import * as table from './table/table.js'
       if (program.errors.length > 0) {
         _postMessage({
           id,
-          errors: program.errors
+          error: program.errors[0]
         })
       } else {
         let programBody = program.body
@@ -70,7 +70,7 @@ import * as table from './table/table.js'
           }).catch(error => {
             _postMessage({
               id,
-              errors: [ { description: error.message } ]
+              error: { description: error.message }
             })
           })
         } else {
@@ -83,7 +83,7 @@ import * as table from './table/table.js'
     } catch (error) {
       _postMessage({
         id,
-        errors: [ { description: error.message } ]
+        error: { description: error.message }
       })
     }
   }
