@@ -57,7 +57,7 @@ Texture.registerPlugin({
     articleManuscriptConfig.addLabel('stencila:run-all-cells', 'Run All Cells')
     articleManuscriptConfig.addLabel('stencila:language', 'Language')
     articleManuscriptConfig.addLabel('stencila:status:ok', 'ok')
-    articleManuscriptConfig.addLabel('stencila:status:not-evaluated', 'not evaluated')
+    articleManuscriptConfig.addLabel('stencila:status:not-evaluated', 'N/A')
     articleManuscriptConfig.addLabel('stencila:status:error', 'error')
     articleManuscriptConfig.addLabel('stencila:placeholder:source', 'Enter Source Code')
 

@@ -66,7 +66,7 @@ export default class StencillaCellComponent extends Component {
     )
     headerEl.append(toggleSource)
 
-    let langEl = $$('div').addClass('se-title').text(`${this._getLangTitle()} Cell`)
+    let langEl = $$('div').addClass('se-title').text(this._getTitle())
     headerEl.append(langEl)
 
     headerEl.append($$('span').addClass('se-spacer'))
@@ -157,8 +157,8 @@ export default class StencillaCellComponent extends Component {
     return 'javascript'
   }
 
-  _getLangTitle () {
-    return 'Javascript'
+  _getTitle () {
+    return `Cell`
   }
 }
 
