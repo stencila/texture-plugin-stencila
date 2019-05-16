@@ -1,4 +1,4 @@
-import { ArticleJATSImporter } from 'texture'
+import { ArticleJATSImporter } from 'substance-texture'
 
 export default class StencilaArticleJATSImporter extends ArticleJATSImporter {
   import (...args) {

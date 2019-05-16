@@ -1,5 +1,5 @@
 import { Component } from 'substance'
-import { NodeComponentMixin } from 'texture'
+import { NodeComponentMixin } from 'substance-texture'
 
 export default class StencilaInlineCellEditor extends NodeComponentMixin(Component) {
   render ($$) {

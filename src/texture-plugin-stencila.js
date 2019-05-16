@@ -1,4 +1,4 @@
-import { Texture } from 'texture'
+import { Texture } from 'substance-texture'
 import CodeEditor from './code-editor/CodeEditor'
 import RunCellCommand from './RunCellCommand'
 import RunAllCellsCommand from './RunAllCellsCommand'
