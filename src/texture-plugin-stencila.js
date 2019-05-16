@@ -2,6 +2,7 @@ import { Texture } from 'substance-texture'
 import CodeEditor from './code-editor/CodeEditor'
 import RunCellCommand from './RunCellCommand'
 import RunAllCellsCommand from './RunAllCellsCommand'
+import StencilaArticle from './StencilaArticle'
 import StencilaCell from './StencilaCell'
 import StencilaCellComponent from './StencilaCellComponent'
 import StencilaCellConverter from './StencilaCellConverter'
@@ -13,33 +14,33 @@ import JavascriptRuntimeService from './jsruntime/JavascriptRuntimeService'
 import StencilaArticleJATSImporter from './StencilaArticleJATSImporter'
 import StencilaArticleJATSExporter from './StencilaArticleJATSExporter'
 
-const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
-
 Texture.registerPlugin({
   name: 'stencila-plugin',
   configure (configurator) {
     let articleConfig = configurator.getConfiguration('article')
 
-    articleConfig.addService(StencilaCellService.id, StencilaCellService.create)
-    articleConfig.addService(JavascriptRuntimeService.id, JavascriptRuntimeService.create)
-    // TODO register more runtime services, or a universal StencilaRuntimeService
+    // defining a customisation of the default article type
+    // this means, the configuration is inherited and can be overridden and extended
+    let stencilaArticleConfig = articleConfig.createCustomisation(StencilaArticle.docTypeId)
 
-    // let Texture know about a JATS customization used by this plugin
-    articleConfig.registerSchemaId(RDS_JATS_PUBLIC_ID)
+    stencilaArticleConfig.setArticleClass(StencilaArticle)
 
     // register additional nodes for the internal article document model
-    articleConfig.addNode(StencilaCell)
-    articleConfig.addNode(StencilaInlineCell)
+    stencilaArticleConfig.addNode(StencilaCell)
+    stencilaArticleConfig.addNode(StencilaInlineCell)
+
     // register converters for custom elements
-    articleConfig.addConverter(RDS_JATS_PUBLIC_ID, StencilaCellConverter)
-    articleConfig.addConverter(RDS_JATS_PUBLIC_ID, StencilaInlineCellConverter)
-    articleConfig.addImporter(RDS_JATS_PUBLIC_ID, StencilaArticleJATSImporter, {
-      converterGroups: ['jats', RDS_JATS_PUBLIC_ID]
-    })
-    // register a factory for an exporter
-    articleConfig.addExporter(RDS_JATS_PUBLIC_ID, StencilaArticleJATSExporter, {
-      converterGroups: ['jats', RDS_JATS_PUBLIC_ID]
-    })
+    stencilaArticleConfig.addConverter(StencilaCellConverter)
+    stencilaArticleConfig.addConverter(StencilaInlineCellConverter)
+
+    // register Im- and Exporter classes overriding handling of meta-data
+    stencilaArticleConfig.addImporter(StencilaArticle.docTypeId, StencilaArticleJATSImporter)
+    stencilaArticleConfig.addExporter(StencilaArticle.docTypeId, StencilaArticleJATSExporter)
+
+    // register
+    stencilaArticleConfig.addService(StencilaCellService.id, StencilaCellService.create)
+    stencilaArticleConfig.addService(JavascriptRuntimeService.id, JavascriptRuntimeService.create)
+
     // add commands and components to the article manuscript configuration
     let articleManuscriptConfig = configurator.getConfiguration('article.manuscript')
 
