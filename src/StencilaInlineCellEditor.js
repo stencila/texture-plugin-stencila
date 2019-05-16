@@ -43,7 +43,7 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
     let status = this._getStatus()
     headerEl.addClass(`sm-${status}`)
 
-    let langEl = $$('span').addClass('se-title').text(`${this._getLangTitle()} Inline Cell`)
+    let langEl = $$('span').addClass('se-title').text(`Inline Cell`)
     headerEl.append(langEl)
 
     headerEl.append($$('span').addClass('se-spacer'))
@@ -54,9 +54,9 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
     )
     headerEl.append(statusEl)
 
-    if (nodeState.hasOwnProperty('count')) {
+    if (nodeState.hasOwnProperty('evalCounter')) {
       let countEl = $$('span').addClass('se-count').append(
-        $$('span').addClass('se-count').text(`[${nodeState.count}]`)
+        $$('span').addClass('se-count').text(`[${nodeState.evalCounter}]`)
       )
       headerEl.append(countEl)
     }
