@@ -1,30 +1,33 @@
 .sc-stencila-cell {
-  font-family: monospace;
+  font-family: monospace, monospace;
 }
 
 .sc-stencila-cell .sc-code-editor {
-  padding: 10px 10px;
-  outline: solid 1px #ddd;
-  background: #fafafa;
+  padding: var(--t-half-spacing) var(--t-half-spacing);
+  outline: solid 1px var(--t-border-color);
+  background: var(--t-default-button-background);
+}
+
+.sc-stencila-cell .sc-code-editor:focus {
+  outline: var(--t-input-focus-border);
 }
 
 .sc-stencila-cell > .se-value {
-  padding: 10px 10px;
+  padding: var(--t-half-spacing) var(--t-half-spacing);
   white-space: pre;
 }
 
-.sc-stencila-cell > .se-error {
-  padding: 10px 10px;
+.sc-stencila-cell > .se-errors > .se-error {
+  padding: var(--t-half-spacing) var(--t-half-spacing);
   white-space: pre;
-  background-color: rgba(255, 0, 0, 0.5);
+  background-color: var(--stencila-error-background-color);
 }
 
 .sc-stencila-cell .se-header {
   width: 100%;
   display: flex;
   flex-direction: row;
-  margin-bottom: 5px;
-  align-items: space-between;
+  margin-bottom: var(--t-input-padding);
 }
 
 .sc-stencila-cell .se-header > * {
@@ -32,29 +35,27 @@
   flex-grow: 0;
 }
 
-.sc-stencila-cell .se-header > * + * {
-  margin-left: 10px;
-}
-
-.sc-stencila-cell .se-header > .se-toggle-source {
-  background: #0788D1;
-  color: white;
-  border-radius: 2px;
-  padding: 1px;
-  min-width: 18px;
-  text-align: center;
-}
-
 .sc-stencila-cell .se-header > .se-spacer {
   flex-grow: 1;
 }
 
-.sc-stencila-cell .se-header .se-label {
-  color: #ccc;
+.sc-stencila-cell .se-header > * + * {
+  margin-left: var(--t-half-spacing);
 }
 
-.sc-stencila-cell .se-header .se-title {
-  color: #ccc;
+.sc-stencila-cell .se-header > .se-toggle-source {
+  background: var(--t-action-color);
+  color: var(--t-inverted-text-color);
+  border-radius: 2px;
+  padding: 1px;
+  min-width: var(--t-text-font-size);
+  text-align: center;
+}
+
+.sc-stencila-cell .se-header .se-label,
+.sc-stencila-cell .se-header .se-title,
+.sc-stencila-cell .se-header .se-status .se-count {
+  color: var(--t-light-text-color);
 }
 
 .sc-stencila-cell .se-header .se-label::after {
@@ -62,19 +63,15 @@
 }
 
 .sc-stencila-cell .se-header .se-status .se-status-value.sm-ok {
-  color: green;
+  color: var(--stencila-ok-color);
 }
 
 .sc-stencila-cell .se-header .se-status .se-status-value.sm-error {
-  color: red;
+  color: var(--t-error-text-color);
 }
 
 .sc-stencila-cell .se-header .se-status .se-status-value.sm-not-evaluated {
-  color: #ccc;
-}
-
-.sc-stencila-cell .se-header .se-status .se-eval-counter {
-  color: #ccc;
+  color: var(--t-placeholder-text-color);
 }
 
 .sc-stencila-cell .se-value.sm-hidden {

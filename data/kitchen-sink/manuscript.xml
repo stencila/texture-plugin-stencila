@@ -30,7 +30,9 @@
     <stencila:cell>
       <stencila:source><![CDATA[y = 2 * x]]></stencila:source>
     </stencila:cell>
-    <p>ABCDEFG <stencila:inline-cell><stencila:source><![CDATA[y/3]]></stencila:source></stencila:inline-cell> HIJKLM</p>
+    <p>ABCDEFG <stencila:inline-cell><stencila:source><![CDATA[y / 3]]></stencila:source></stencila:inline-cell> HIJKLM</p>
+    <p>ABCDEFG</p>
+    <p>ABCDEFG</p>
   </body>
   <back />
 </article>

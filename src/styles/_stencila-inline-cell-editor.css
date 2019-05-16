@@ -1,0 +1,63 @@
+.sc-stencila-inline-cell-editor {
+  min-width: 300px;
+  padding: var(--t-half-spacing);
+  font-family: monospace, monospace;
+}
+
+.sc-stencila-inline-cell-editor .se-header {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  margin-bottom: var(--t-input-padding);
+}
+
+.sc-stencila-inline-cell-editor .se-header > * {
+  display: inline-block;
+  flex-grow: 0;
+}
+
+.sc-stencila-inline-cell-editor .se-header > .se-spacer {
+  flex-grow: 1;
+}
+
+.sc-stencila-inline-cell-editor .se-header > * + * {
+  margin-left: var(--t-half-spacing);
+}
+
+.sc-stencila-inline-cell-editor .se-header .se-label,
+.sc-stencila-inline-cell-editor .se-header .se-title,
+.sc-stencila-inline-cell-editor .se-header .se-status .se-count {
+  color: var(--t-light-text-color);
+}
+
+.sc-stencila-inline-cell-editor .se-header .se-label::after {
+  content: ':'
+}
+
+.sc-stencila-inline-cell-editor .sc-code-editor {
+  padding: var(--t-half-spacing) var(--t-half-spacing);
+  outline: solid 1px var(--t-border-color);
+  background: var(--t-default-button-background);
+}
+
+.sc-stencila-inline-cell-editor .sc-code-editor:focus {
+  outline: var(--t-input-focus-border);
+}
+
+.sc-stencila-inline-cell-editor .se-header .se-status .se-status-value.sm-not-evaluated {
+  color: var(--t-placeholder-text-color);
+}
+
+.sc-stencila-inline-cell-editor .se-header .se-status .se-status-value.sm-ok {
+  color: var(--stencila-ok-color);
+}
+
+.sc-stencila-inline-cell-editor .se-header .se-status .se-status-value.sm-error {
+  color: var(--t-error-text-color);
+}
+
+.sc-stencila-inline-cell-editor .se-errors > .se-error {
+  padding: var(--t-half-spacing) var(--t-half-spacing);
+  white-space: pre;
+  background-color: var(--stencila-error-background-color);
+}
