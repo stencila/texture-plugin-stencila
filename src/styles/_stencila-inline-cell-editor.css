@@ -51,3 +51,13 @@
 .sc-stencila-inline-cell-editor .se-header .se-status .se-status-value.sm-ok {
   color: var(--stencila-ok-color);
 }
+
+.sc-stencila-inline-cell-editor .se-header .se-status .se-status-value.sm-error {
+  color: var(--t-error-text-color);
+}
+
+.sc-stencila-inline-cell-editor .se-errors > .se-error {
+  padding: var(--t-half-spacing) var(--t-half-spacing);
+  white-space: pre;
+  background-color: var(--stencila-error-background-color);
+}
