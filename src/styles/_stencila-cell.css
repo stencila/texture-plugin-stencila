@@ -8,6 +8,10 @@
   background: var(--t-default-button-background);
 }
 
+.sc-stencila-cell .sc-code-editor:focus {
+  outline: var(--t-input-focus-border);
+}
+
 .sc-stencila-cell > .se-value {
   padding: var(--t-half-spacing) var(--t-half-spacing);
   white-space: pre;

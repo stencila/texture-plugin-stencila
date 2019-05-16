@@ -39,6 +39,11 @@
   background: var(--t-default-button-background);
 }
 
+.sc-stencila-inline-cell-editor .sc-code-editor:focus {
+  outline: var(--t-input-focus-border);
+}
+
+
 .sc-stencila-inline-cell-editor .se-header .se-status .se-status-value.sm-not-evaluated {
   color: var(--t-placeholder-text-color);
 }
