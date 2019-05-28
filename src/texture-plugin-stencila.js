@@ -12,6 +12,8 @@ import StencilaCellService from './StencilaCellService'
 import JavascriptRuntimeService from './jsruntime/JavascriptRuntimeService'
 import StencilaArticleJATSImporter from './StencilaArticleJATSImporter'
 import StencilaArticleJATSExporter from './StencilaArticleJATSExporter'
+import InsertCellCommand from './InsertCellCommand'
+import InsertInlineCellCommand from './InsertInlineCellCommand'
 
 const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
 
@@ -30,6 +32,16 @@ Texture.registerPlugin({
     // register additional nodes for the internal article document model
     articleConfig.addNode(StencilaCell)
     articleConfig.addNode(StencilaInlineCell)
+
+    // TODO: we need a way to override existing node schemas, e.g. to allow insertion of a cell into the body
+    // for now we HACK into the node's schema
+    let Body = articleConfig._nodes.get('body')
+    let bodyContentSchema = Body.schema.getProperty('content')
+    bodyContentSchema.targetTypes.push(StencilaCell.type)
+    let Paragraph = articleConfig._nodes.get('paragraph')
+    let paragraphContentSchema = Paragraph.schema.getProperty('content')
+    paragraphContentSchema.targetTypes.push(StencilaInlineCell.type)
+
     // register converters for custom elements
     articleConfig.addConverter(RDS_JATS_PUBLIC_ID, StencilaCellConverter)
     articleConfig.addConverter(RDS_JATS_PUBLIC_ID, StencilaInlineCellConverter)
@@ -43,6 +55,13 @@ Texture.registerPlugin({
     // add commands and components to the article manuscript configuration
     let articleManuscriptConfig = configurator.getConfiguration('article.manuscript')
 
+    articleManuscriptConfig.addCommand(InsertCellCommand.id, InsertCellCommand, {
+      nodeType: StencilaCell.type
+    })
+    articleManuscriptConfig.addCommand(InsertInlineCellCommand.id, InsertInlineCellCommand, {
+      nodeType: StencilaInlineCell.type
+    })
+
     articleManuscriptConfig.addCommand(RunCellCommand.id, RunCellCommand, { commandGroup: 'stencila:cells' })
     articleManuscriptConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand, { commandGroup: 'stencila:cells' })
 
@@ -52,7 +71,9 @@ Texture.registerPlugin({
 
     articleManuscriptConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCellCommand.id })
 
+    articleManuscriptConfig.addLabel('stencila:cell', 'Cell')
     articleManuscriptConfig.addLabel('stencila:cell-tools', 'Cell')
+    articleManuscriptConfig.addLabel('stencila:inline-cell', 'Inline Cell')
     articleManuscriptConfig.addLabel('stencila:run-cell', 'Run Cell')
     articleManuscriptConfig.addLabel('stencila:run-all-cells', 'Run All Cells')
     articleManuscriptConfig.addLabel('stencila:language', 'Language')
@@ -68,18 +89,20 @@ Texture.registerPlugin({
     // for now this is needs understanding of the internal toolpanel layout
     // until we understand better what we need
     articleManuscriptConfig.extendToolPanel('toolbar', toolPanelConfig => {
+      let insertTools = toolPanelConfig.find(group => group.name === 'insert')
+      insertTools.items.find(group => group.name === 'content').items.push({ type: 'command', name: 'stencila:insert-cell', label: 'stencila:cell' })
+      insertTools.items.find(group => group.name === 'inline-content').items.push({ type: 'command', name: 'stencila:insert-inline-cell', label: 'stencila:inline-cell' })
+
       let contextTools = toolPanelConfig.find(group => group.name === 'context-tools')
-      if (contextTools) {
-        contextTools.items.push({
-          type: 'group',
-          name: 'stencila:cells',
-          style: 'descriptive',
-          label: 'stencila:cell-tools',
-          items: [
-            { type: 'command-group', name: 'stencila:cells' }
-          ]
-        })
-      }
+      contextTools.items.push({
+        type: 'group',
+        name: 'stencila:cells',
+        style: 'descriptive',
+        label: 'stencila:cell-tools',
+        items: [
+          { type: 'command-group', name: 'stencila:cells' }
+        ]
+      })
     })
     articleManuscriptConfig.extendToolPanel('context-menu', toolPanelConfig => {
       toolPanelConfig[0].items.push(
