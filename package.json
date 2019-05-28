@@ -24,10 +24,10 @@
     "style-loader": "^0.23.1",
     "substance-bundler": "0.25.5",
     "substance-test": "0.13.2",
-    "substance-texture": "2.3.0-plugin-support-0.2",
+    "substance-texture": "2.3.0-plugin-support-3",
     "webpack": "^4.30.0"
   },
   "peerDependencies": {
-    "substance-texture": "2.3.0-plugin-support-0.2"
+    "substance-texture": "2.3.0-plugin-support-3"
   }
 }
