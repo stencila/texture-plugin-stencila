@@ -37,10 +37,10 @@ Texture.registerPlugin({
     // for now we HACK into the node's schema
     let Body = articleConfig._nodes.get('body')
     let bodyContentSchema = Body.schema.getProperty('content')
-    bodyContentSchema.targetTypes.push(StencilaCell.type)
+    bodyContentSchema.targetTypes.add(StencilaCell.type)
     let Paragraph = articleConfig._nodes.get('paragraph')
     let paragraphContentSchema = Paragraph.schema.getProperty('content')
-    paragraphContentSchema.targetTypes.push(StencilaInlineCell.type)
+    paragraphContentSchema.targetTypes.add(StencilaInlineCell.type)
 
     // register converters for custom elements
     articleConfig.addConverter(RDS_JATS_PUBLIC_ID, StencilaCellConverter)
@@ -52,43 +52,41 @@ Texture.registerPlugin({
     articleConfig.addExporter(RDS_JATS_PUBLIC_ID, StencilaArticleJATSExporter, {
       converterGroups: ['jats', RDS_JATS_PUBLIC_ID]
     })
-    // add commands and components to the article manuscript configuration
-    let articleManuscriptConfig = configurator.getConfiguration('article.manuscript')
 
-    articleManuscriptConfig.addCommand(InsertCellCommand.id, InsertCellCommand, {
+    articleConfig.addCommand(InsertCellCommand.id, InsertCellCommand, {
       nodeType: StencilaCell.type
     })
-    articleManuscriptConfig.addCommand(InsertInlineCellCommand.id, InsertInlineCellCommand, {
+    articleConfig.addCommand(InsertInlineCellCommand.id, InsertInlineCellCommand, {
       nodeType: StencilaInlineCell.type
     })
 
-    articleManuscriptConfig.addCommand(RunCellCommand.id, RunCellCommand, { commandGroup: 'stencila:cells' })
-    articleManuscriptConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand, { commandGroup: 'stencila:cells' })
+    articleConfig.addCommand(RunCellCommand.id, RunCellCommand, { commandGroup: 'stencila:cells' })
+    articleConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand, { commandGroup: 'stencila:cells' })
 
-    articleManuscriptConfig.addComponent('code-editor', CodeEditor)
-    articleManuscriptConfig.addComponent(StencilaCell.type, StencilaCellComponent)
-    articleManuscriptConfig.addComponent(StencilaInlineCell.type, StencilaInlineCellComponent)
+    articleConfig.addComponent('code-editor', CodeEditor)
+    articleConfig.addComponent(StencilaCell.type, StencilaCellComponent)
+    articleConfig.addComponent(StencilaInlineCell.type, StencilaInlineCellComponent)
 
-    articleManuscriptConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCellCommand.id })
+    articleConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCellCommand.id })
 
-    articleManuscriptConfig.addLabel('stencila:cell', 'Cell')
-    articleManuscriptConfig.addLabel('stencila:cell-tools', 'Cell')
-    articleManuscriptConfig.addLabel('stencila:inline-cell', 'Inline Cell')
-    articleManuscriptConfig.addLabel('stencila:run-cell', 'Run Cell')
-    articleManuscriptConfig.addLabel('stencila:run-all-cells', 'Run All Cells')
-    articleManuscriptConfig.addLabel('stencila:language', 'Language')
-    articleManuscriptConfig.addLabel('stencila:status:ok', 'ok')
-    articleManuscriptConfig.addLabel('stencila:status:not-evaluated', 'N/A')
-    articleManuscriptConfig.addLabel('stencila:status:error', 'error')
-    articleManuscriptConfig.addLabel('stencila:placeholder:source', 'Enter Source Code')
+    articleConfig.addLabel('stencila:cell', 'Cell')
+    articleConfig.addLabel('stencila:cell-tools', 'Cell')
+    articleConfig.addLabel('stencila:inline-cell', 'Inline Cell')
+    articleConfig.addLabel('stencila:run-cell', 'Run Cell')
+    articleConfig.addLabel('stencila:run-all-cells', 'Run All Cells')
+    articleConfig.addLabel('stencila:language', 'Language')
+    articleConfig.addLabel('stencila:status:ok', 'ok')
+    articleConfig.addLabel('stencila:status:not-evaluated', 'N/A')
+    articleConfig.addLabel('stencila:status:error', 'error')
+    articleConfig.addLabel('stencila:placeholder:source', 'Enter Source Code')
 
-    articleManuscriptConfig.addIcon('stencila:expand-code', { 'fontawesome': 'fa-angle-right' })
-    articleManuscriptConfig.addIcon('stencila:collapse-code', { 'fontawesome': 'fa-angle-down' })
+    articleConfig.addIcon('stencila:expand-code', { 'fontawesome': 'fa-angle-right' })
+    articleConfig.addIcon('stencila:collapse-code', { 'fontawesome': 'fa-angle-down' })
 
     // EXPERIMENTAL: we do not have an easy way to extend the toolbar et al.
     // for now this is needs understanding of the internal toolpanel layout
     // until we understand better what we need
-    articleManuscriptConfig.extendToolPanel('toolbar', toolPanelConfig => {
+    articleConfig.extendToolPanel('toolbar', toolPanelConfig => {
       let insertTools = toolPanelConfig.find(group => group.name === 'insert')
       insertTools.items.find(group => group.name === 'content').items.push({ type: 'command', name: 'stencila:insert-cell', label: 'stencila:cell' })
       insertTools.items.find(group => group.name === 'inline-content').items.push({ type: 'command', name: 'stencila:insert-inline-cell', label: 'stencila:inline-cell' })
@@ -104,7 +102,7 @@ Texture.registerPlugin({
         ]
       })
     })
-    articleManuscriptConfig.extendToolPanel('context-menu', toolPanelConfig => {
+    articleConfig.extendToolPanel('context-menu', toolPanelConfig => {
       toolPanelConfig[0].items.push(
         { type: 'command-group', name: 'stencila:cells' }
       )
