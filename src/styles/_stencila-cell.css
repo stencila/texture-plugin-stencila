@@ -46,7 +46,7 @@
 .sc-stencila-cell .se-header > .se-toggle-source {
   background: var(--t-action-color);
   color: var(--t-inverted-text-color);
-  border-radius: 2px;
+  border-radius: 4px;
   padding: 1px;
   min-width: var(--t-text-font-size);
   text-align: center;

@@ -61,9 +61,16 @@ export default class StencillaCellComponent extends Component {
     let status = this._getStatus()
     headerEl.addClass(`sm-${status}`)
 
-    let toggleSource = $$('div').addClass('se-toggle-source').append(
-      this.context.iconProvider.renderIcon($$, this.state.showCode ? 'stencila:collapse-code' : 'stencila:expand-code')
-    )
+    let toggleSource = $$('div').addClass('se-toggle-source')
+    if (this.state.showCode) {
+      toggleSource.append(
+        this.context.iconProvider.renderIcon($$, 'stencila:collapse-code')
+      ).addClass('sm-expanded')
+    } else {
+      toggleSource.append(
+        this.context.iconProvider.renderIcon($$, 'stencila:expand-code')
+      ).addClass('sm-collapsed')
+    }
     headerEl.append(toggleSource)
 
     let langEl = $$('div').addClass('se-title').text(this._getTitle())
