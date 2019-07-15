@@ -1,9 +1,10 @@
-import StencilaCommand from './_StencilaCommand'
+import { Command } from 'substance'
 import StencilaCell from '../StencilaCell'
 import StencilaInlineCell from '../StencilaInlineCell'
 import StencilaCellService from '../StencilaCellService'
+import StencilaCommandMixin from './_StencilaCommandMixin'
 
-export default class RunCellCommand extends StencilaCommand {
+export default class RunCellCommand extends StencilaCommandMixin(Command) {
   static get id () { return 'stencila:run-cell' }
 
   getCommandState (params, context) {

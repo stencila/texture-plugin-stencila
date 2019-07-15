@@ -1,7 +1,8 @@
-import StencilaCommand from './_StencilaCommand'
+import { Command } from 'substance'
 import StencilaCellService from '../StencilaCellService'
+import StencilaCommandMixin from './_StencilaCommandMixin'
 
-export default class RunAllCellsCommand extends StencilaCommand {
+export default class RunAllCellsCommand extends StencilaCommandMixin(Command) {
   static get id () { return 'stencila:run-all-cells' }
 
   getCommandState (params, context) {
