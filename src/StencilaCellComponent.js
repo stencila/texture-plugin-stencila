@@ -2,14 +2,14 @@ import { Component, isPlainObject } from 'substance'
 
 export default class StencillaCellComponent extends Component {
   didMount () {
-    this.context.appState.addObserver(['document'], this._onNodeUpdate, this, {
+    this.context.editorState.addObserver(['document'], this._onNodeUpdate, this, {
       stage: 'render',
       document: { path: [this.props.node.id] }
     })
   }
 
   dispose () {
-    this.context.appState.removeObserver(this)
+    this.context.editorState.removeObserver(this)
   }
 
   getInitialState () {

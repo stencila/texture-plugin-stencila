@@ -10,10 +10,7 @@ export default class InsertInlineCellCommand extends InsertInlineNodeCommand {
     return StencilaInlineCell.type
   }
 
-  _createNode (tx, params, context) {
-    return tx.create({
-      type: StencilaInlineCell.type,
-      source: ''
-    })
+  execute (params, context) {
+    context.api._insertInlineNode(tx => tx.create({ type: StencilaInlineCell.type }))
   }
 }

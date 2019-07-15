@@ -6,7 +6,9 @@ export default class InsertCellCommand extends InsertNodeCommand {
     return 'stencila:insert-cell'
   }
 
-  createNode (tx) {
-    return tx.create({ type: StencilaCell.type })
+  execute (params, context) {
+    let api = context.api
+    let cell = api.insertBlockNode({ type: StencilaCell.type })
+    api.focusEditor([cell.id, 'source'])
   }
 }
