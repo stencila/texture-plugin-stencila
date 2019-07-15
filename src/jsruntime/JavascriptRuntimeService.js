@@ -34,7 +34,6 @@ export default class JavascriptRuntimeService extends AbstractRuntimeService {
   }
 
   _startWorker () {
-    // TODO: this URL should be configurable
     let backend = new Worker(this.workerURL)
     backend.onmessage = e => this._onResponse(e.data)
     backend.onerror = e => this._onError(e)

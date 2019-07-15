@@ -15,16 +15,14 @@ export class AbstractRuntimeService {
    * Requesting code execution:
    * ```
    * POST execute { id, source }
-   * { id, error, value }
+   * Response: { id, error, value }
    * ```
-   * > TODO: discuss if this is sufficient
    *
    * Sending content from the DAR that should be saved in the backend's file-system
    * to allow reading and processing that content.
    * ```
    * POST sync [{ path, data }...] }
    * ```
-   * > TODO: discuss if this is sufficient
    *
    * @param {string} type HTTP message type
    * @param {object} data tha payload send with the request
@@ -54,18 +52,17 @@ export class AbstractRuntimeService {
    * ```
    */
   requestExecution (id, src, cb) {
-    let existing = this.queue.findIndex(r => r.id === id)
-    let triggerNext = this.queue.length === 0
-    if (existing >= 0) {
-      let request = this.queue[existing]
-      this.queue.splice(existing, 1)
-      // interrupt an already started execution (if that is possible at all)
-      this._cancelExecutionRequest(request)
-      return
-    }
-    this.queue.push(new ExecutionRequest(id, this.evalCounter++, src, cb))
-    if (triggerNext) {
-      this._triggerNextExecution()
+    // only queue a request if has not been requested already
+    // Note, that replacing the old request is not a good idea,
+    // as other queued requests might depend on the result
+    let isQueued = this.queue.findIndex(r => r.id === id) >= 0
+    if (!isQueued) {
+      // automatically trigger next execution when the queue is empty
+      let triggerNext = this.queue.length === 0
+      this.queue.push(new ExecutionRequest(id, this.evalCounter++, src, cb))
+      if (triggerNext) {
+        this._triggerNextExecution()
+      }
     }
   }
 
@@ -213,6 +210,7 @@ export class AbstractRuntimeService {
   }
 }
 
+// A record to store requests in a queue
 class ExecutionRequest {
   constructor (cellId, evalCounter, src, cb) {
     this.id = cellId
@@ -225,6 +223,9 @@ class ExecutionRequest {
 const INIT = 0
 const SYNC = 1
 
+// one place to manage booting up the backend
+// if the runtime service is requested another time
+// during bootup, the same Promise is returned as the first time
 export class BackendBootupSequence {
   constructor (backend) {
     this.state = INIT
