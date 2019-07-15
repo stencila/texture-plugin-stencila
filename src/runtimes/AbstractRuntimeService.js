@@ -26,29 +26,25 @@ export class AbstractRuntimeService {
     this.evalCounter = 0
   }
 
-  /**
-   * Sends a (HTTP) request to the backend
-   *
-   * Requesting code execution:
-   * ```
-   * POST execute { id, source }
-   * Response: { id, error, value }
-   * ```
-   *
-   * Sending content from the DAR that should be saved in the backend's file-system
-   * to allow reading and processing that content.
-   * ```
-   * POST sync [{ path, data }...] }
-   * ```
-   *
-   * @param {string} type HTTP message type
-   * @param {object} data tha payload send with the request
-   */
-  _sendMessage (type, data) {
-    throw new Error('This method is abstract.')
+  _cancelExecutionRequest (request) {
+    throw new Error('This method is abstract')
   }
 
-  _cancelExecutionRequest (request) {
+  _boot () {
+    throw new Error('This method is abstract')
+  }
+
+  _bootFinished (data) {
+    // do something with the data from the boot response
+    // e.g. storing a session token
+    throw new Error('This method is abstract')
+  }
+
+  _sendAssets (entries) {
+    throw new Error('This method is abstract')
+  }
+
+  _sendExecutionRequest (id, source) {
     throw new Error('This method is abstract')
   }
 
@@ -112,7 +108,7 @@ export class AbstractRuntimeService {
     }
   }
 
-  _onResponse (data) {
+  _proceedWithResponse (data) {
     // ATTENTION: this implementation assumes that a non-error response,
     // e.g. status=200, can be used as confirmation to proceed with the process.
     switch (this.state) {
@@ -139,7 +135,7 @@ export class AbstractRuntimeService {
   }
 
   // called on errors in the transport layer, e.g. no connection
-  _onError (e) {
+  _proceedWithError (e) {
     switch (this.state) {
       case BOOTING:
       case SYNCING: {
@@ -197,13 +193,7 @@ export class AbstractRuntimeService {
       if (this.queue.length > 0) {
         let next = this.queue[0]
         this._running = true
-        this._sendMessage('POST', {
-          command: 'execute',
-          args: {
-            id: next.id,
-            src: next.src
-          }
-        })
+        this._sendExecutionRequest(next.id, next.src)
       }
     })
   }
@@ -229,28 +219,10 @@ export class AbstractRuntimeService {
     }
   }
 
-  _boot () {
-    throw new Error('This method is abstract')
-  }
-
-  _bootFinished (data) {
-    // do something with the data from the boot response
-    // e.g. storing a session token
-    console.info('Backend has been booted', data)
-  }
-
   _sync () {
     // TODO: implement some kind of timeout handling
     this._getAssetBlobsForSync().then(entries => {
       this._sendAssets(entries)
-    })
-  }
-
-  _sendAssets (entries) {
-    // TODO: dont now if a POST with JSON data is the right thing here
-    this._sendMessage('POST', {
-      command: 'sync',
-      args: entries
     })
   }
 
