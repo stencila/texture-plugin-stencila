@@ -1,3 +1,9 @@
+/**
+ * This service provides the client side for running cells,
+ * as opposed to RuntimeService, which establish the connection
+ * to the backend.
+ *
+ */
 export default class StencileCellService {
   constructor (context) {
     this.context = context
@@ -16,26 +22,44 @@ export default class StencileCellService {
   }
 
   runCell (cellId) {
-    this._getLanguageService().then(service => {
-      let cell = this.editorSession.getDocument().get(cellId)
-      service.requestExecution(cell.id, cell.source, res => {
-        this._onResult(res)
-      })
-    })
+    let cell = this.editorSession.getDocument().get(cellId)
+    this._runCells([cell])
+  }
+
+  runCellAndAllBefore (cellId) {
+    let allCells = this._getAllCells()
+    let cellIdx = allCells.findIndex(cell => cell.id === cellId)
+    if (cellIdx >= 0) {
+      this._runCells(allCells.slice(0, cellIdx + 1))
+    }
+  }
+
+  runCellAndAllAfter (cellId) {
+    let allCells = this._getAllCells()
+    let cellIdx = allCells.findIndex(cell => cell.id === cellId)
+    if (cellIdx >= 0) {
+      this._runCells(allCells.slice(cellIdx))
+    }
   }
 
   runAll () {
-    let doc = this.editorSession.getDocument()
-    // TODO: where to look for
-    let allCells = doc.findAll('stencila-cell, stencila-inline-cell')
+    this._runCells(this._getAllCells())
+  }
+
+  _runCells (cells) {
     this._getLanguageService().then(service => {
       service.clearQueue()
-      for (let cell of allCells) {
+      for (let cell of cells) {
         service.requestExecution(cell.id, cell.source, res => {
           this._onResult(res)
         })
       }
     })
+  }
+
+  _getAllCells () {
+    let doc = this.editorSession.getDocument()
+    return doc.findAll('stencila-cell, stencila-inline-cell')
   }
 
   _getLanguageService () {
