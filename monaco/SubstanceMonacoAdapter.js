@@ -34,7 +34,7 @@ export default class SubstanceMonacoAdapter extends Disposable {
 
     let doc = editorSession.getDocument()
     let source = doc.get(sourcePath)
-    let language = options.language || 'javascript'
+    let language = options.language
 
     // TODO: language should come from the document as well
     let languageSelection = StaticServices.modeService.get().create(language)

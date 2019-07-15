@@ -17,7 +17,7 @@
   white-space: pre;
 }
 
-.sc-stencila-cell > .se-errors > .se-error {
+.sc-stencila-cell > .se-error {
   padding: var(--t-half-spacing) var(--t-half-spacing);
   white-space: pre;
   background-color: var(--stencila-error-background-color);

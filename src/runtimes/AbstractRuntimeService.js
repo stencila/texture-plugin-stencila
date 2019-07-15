@@ -1,11 +1,28 @@
+const INITIAL = 0
+const BOOTING = 1
+const RUNNING = 2
+const SYNCING = 3
+const READY = 4
+
 /**
  * An abstract implementation of a RuntimeService that acts as a proxy to
  * a remote code execution service.
+ *
+ * Note: this service is used by StencilaCellService.
  */
 export class AbstractRuntimeService {
   constructor (context) {
     this.context = context
+
+    // state for the bootup protocol
+    this.state = INITIAL
+    // a promise wrapper so that requests can be queued while booting up
+    // Note: this._bootup.promise is the actual Promise instance
+    this._bootup = null
+
+    // queued execution requests
     this.queue = []
+
     this.evalCounter = 0
   }
 
@@ -31,10 +48,6 @@ export class AbstractRuntimeService {
     throw new Error('This method is abstract.')
   }
 
-  _whenBackendReady () {
-    throw new Error('This method is abstract')
-  }
-
   _cancelExecutionRequest (request) {
     throw new Error('This method is abstract')
   }
@@ -52,6 +65,8 @@ export class AbstractRuntimeService {
    * ```
    */
   requestExecution (id, src, cb) {
+    if (!this.state === READY) throw new Error('Backend is not ready.')
+
     // only queue a request if has not been requested already
     // Note, that replacing the old request is not a good idea,
     // as other queued requests might depend on the result
@@ -77,12 +92,67 @@ export class AbstractRuntimeService {
 
   /**
    * Starts the backend initialisation protocol.
-   *
-   * @param {any} backend
    */
-  _waitForBackend (backend) {
-    this._backendBootupSequence = new BackendBootupSequence(backend)
-    return this._backendBootupSequence.promise
+  _whenBackendReady () {
+    switch (this.state) {
+      case INITIAL: {
+        this._bootup = new WaitForBackend()
+        this.state = BOOTING
+        this._boot()
+        return this._bootup.promise
+      }
+      case RUNNING: {
+        this.state = SYNCING
+        this._sync()
+        return this._bootup.promise
+      }
+      default:
+        // already READY or bootup going on
+        return this._bootup.promise
+    }
+  }
+
+  _onResponse (data) {
+    // ATTENTION: this implementation assumes that a non-error response,
+    // e.g. status=200, can be used as confirmation to proceed with the process.
+    switch (this.state) {
+      case BOOTING: {
+        // do something else with the data, e.g. storing a session id
+        this._bootFinished(data)
+        this.state = SYNCING
+        this._sync()
+        break
+      }
+      case SYNCING: {
+        this.state = READY
+        this._bootup.resolve()
+        break
+      }
+      case READY: {
+        this._finishExecutionRequest(data)
+        break
+      }
+      default: {
+        console.error('Unexpected response in this state', this.state, data)
+      }
+    }
+  }
+
+  // called on errors in the transport layer, e.g. no connection
+  _onError (e) {
+    switch (this.state) {
+      case BOOTING:
+      case SYNCING: {
+        this._bootup._reject(e)
+        this._reset()
+        break
+      }
+      case READY: {
+        this._finishExecutionRequest({ error: { description: e.message } })
+        this._reset()
+        break
+      }
+    }
   }
 
   /**
@@ -97,7 +167,9 @@ export class AbstractRuntimeService {
    * ```
    * @param {object} data
    */
-  _finishRequest (data) {
+  _finishExecutionRequest (data) {
+    // TODO: there might be responses returned by the server
+    // that need a reset
     this._running = false
     // if an error occurs the whole execution is halted
     let request = this.queue.shift()
@@ -136,22 +208,14 @@ export class AbstractRuntimeService {
     })
   }
 
-  /**
-   * A helper that retrieves all assets from the DAR that are marked with @sync
-   * TODO: we should discuss if @sync is good enough. IMO, it would be the technically
-   * easiest way to denote explicitly which assets should be synchronized,
-   * as opposed to guessing or sending syncing all assets. Note, that there might unneeded assets, such as images, or even videos.
-   * An idea for authoring from scratch could be, that the UI suggests to enable syncing when
-   * an error has occurred coming from a failed try to load the file remotely.
-   * Soon we will introduce a DAR browser, where this could be managed directly.
-   * For the time being, @sync needs to be added to the DAR manually.
-   */
   _getAssetBlobsForSync () {
     let context = this.context
     let archive = context.archive
     if (archive) {
       let assets = archive.getAssetEntries()
-      assets = assets.filter(e => e.sync)
+      // TODO: we should use some filtering here
+      // and we should only sync those who are dirty
+      // or have not been synced yet
       return Promise.all(assets.map(a => {
         return archive.getBlob(a.path).then(data => {
           return {
@@ -165,48 +229,36 @@ export class AbstractRuntimeService {
     }
   }
 
-  _onResponse (data) {
-    // TODO: this is implementing the boot-up protocol which we need to formalize
-    // ATM, it is assumed that the backend is initialized, coming back with a non-error response
-    // after that files from the DAR are send over to the backend, so that these
-    // are available for reading and processing
-    if (this._backendBootupSequence) {
-      let backendBootupSequence = this._backendBootupSequence
-      // worker booting protocol: launch worker then sync assets
-      if (backendBootupSequence.state === INIT) {
-        backendBootupSequence.state = SYNC
-        this._getAssetBlobsForSync().then(entries => {
-          this._sendMessage('POST', {
-            command: 'sync',
-            args: entries
-          })
-        })
-      } else if (backendBootupSequence.state === SYNC) {
-        delete this._backendBootupSequence
-        backendBootupSequence.resolve()
-      }
-    } else {
-      this._finishRequest(data)
-    }
+  _boot () {
+    throw new Error('This method is abstract')
   }
 
-  _onError (e) {
-    if (this._backendBootupSequence) {
-      console.error('Could not start worker')
-      // TODO: we could also leave the waitForBackend there
-      // as a blocker for upcoming requests
-      // and only remove it when a restart is explicitly asked for
-      let waitForBackend = this._backendBootupSequence
-      delete this._backendBootupSequence
-      waitForBackend.reject(e)
-    } else {
-      // TODO: what to do here? should we stop the worker?
-      console.error(e)
-    }
+  _bootFinished (data) {
+    // do something with the data from the boot response
+    // e.g. storing a session token
+    console.info('Backend has been booted', data)
   }
 
-  _isBootingBackend () {
-    return Boolean(this._backendBootupSequence)
+  _sync () {
+    // TODO: implement some kind of timeout handling
+    this._getAssetBlobsForSync().then(entries => {
+      this._sendAssets(entries)
+    })
+  }
+
+  _sendAssets (entries) {
+    // TODO: dont now if a POST with JSON data is the right thing here
+    this._sendMessage('POST', {
+      command: 'sync',
+      args: entries
+    })
+  }
+
+  _reset () {
+    this.state = INITIAL
+    this._bootup.reject()
+    this._bootup = null
+    this.clearQueue()
   }
 }
 
@@ -220,25 +272,14 @@ class ExecutionRequest {
   }
 }
 
-const INIT = 0
-const SYNC = 1
-
-// one place to manage booting up the backend
-// if the runtime service is requested another time
-// during bootup, the same Promise is returned as the first time
-export class BackendBootupSequence {
-  constructor (backend) {
-    this.state = INIT
-    this.backend = backend
+export class WaitForBackend {
+  constructor () {
+    this._resolve = null
+    this._reject = null
     this.promise = new Promise((resolve, reject) => {
       this._resolve = resolve
       this._reject = reject
     })
-  }
-
-  static create (backend) {
-    let boot = new BackendBootupSequence(backend)
-    return boot.promise
   }
 
   resolve () {

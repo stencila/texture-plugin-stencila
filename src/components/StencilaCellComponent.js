@@ -1,4 +1,5 @@
 import { Component, isPlainObject } from 'substance'
+import StencilaConfiguration from '../nodes/StencilaConfiguration'
 
 export default class StencillaCellComponent extends Component {
   didMount () {
@@ -27,11 +28,11 @@ export default class StencillaCellComponent extends Component {
     el.append(this._renderHeader($$))
 
     if (this.state.showCode) {
+      let doc = node.getDocument()
       let editor = $$(CodeEditor, {
-        document: node.getDocument(),
+        document: doc,
         path: [node.id, 'source'],
-        // TODO: the language should come from the Notebook
-        language: 'javascript'
+        language: this._getLang()
       }).ref('editor')
       el.append(
         editor
@@ -161,7 +162,7 @@ export default class StencillaCellComponent extends Component {
   }
 
   _getLang () {
-    return 'javascript'
+    return StencilaConfiguration.getLanguage(this.props.node.getDocument())
   }
 
   _getTitle () {

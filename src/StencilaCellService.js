@@ -1,8 +1,9 @@
+import StencilaConfiguration from './nodes/StencilaConfiguration'
+
 /**
  * This service provides the client side for running cells,
  * as opposed to RuntimeService, which establish the connection
  * to the backend.
- *
  */
 export default class StencileCellService {
   constructor (context) {
@@ -47,14 +48,20 @@ export default class StencileCellService {
   }
 
   _runCells (cells) {
-    this._getLanguageService().then(service => {
-      service.clearQueue()
-      for (let cell of cells) {
-        service.requestExecution(cell.id, cell.source, res => {
-          this._onResult(res)
-        })
-      }
-    })
+    this._getLanguageService()
+      .then(service => {
+        service.clearQueue()
+        for (let cell of cells) {
+          service.requestExecution(cell.id, cell.source, res => {
+            this._onResult(res)
+          })
+        }
+      })
+      .catch(err => {
+        // take the first cell to show the error
+        let firstCell = cells[0]
+        this._onResult({ id: firstCell.id, error: { description: err.message } })
+      })
   }
 
   _getAllCells () {
@@ -67,8 +74,7 @@ export default class StencileCellService {
   }
 
   _getLang () {
-    // TODO: language should come from article
-    return 'javascript'
+    return StencilaConfiguration.getLanguage(this.editorSession.getDocument())
   }
 
   _onResult (res) {

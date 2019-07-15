@@ -1,8 +1,8 @@
 import { InsertNodeCommand } from 'substance-texture'
 import StencilaCommandMixin from './_StencilaCommandMixin'
-import StencilaCell from '../StencilaCell'
+import StencilaCell from '../nodes/StencilaCell'
 
-export default class InsertCellCommand extends StencilaCommandMixin(InsertNodeCommand) {
+export default class InsertCell extends StencilaCommandMixin(InsertNodeCommand) {
   static get id () {
     return 'stencila:insert-cell'
   }

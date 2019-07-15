@@ -10,19 +10,14 @@ export default class CodeEditor extends Surface {
   constructor (parent, props, opts) {
     super(parent, _withName(props), opts)
 
-    // TODO: what do we do in nodejs?
-    if (platform.inBrowser) {
-      this._monacoAdapter = new window.monaco.SubstanceMonacoAdapter(this.getEditorSession(), this.props.path, this.props)
-    }
+    this._monacoAdapter = this._createMonacoAdapter(this.props)
   }
 
   didMount () {
     super.didMount()
 
     if (this._monacoAdapter) {
-      this._monacoAdapter.onDidChangeTokens(e => {
-        this.refs.content._onDidChangeTokens(e)
-      })
+      this._activateMonacoAdapter()
     }
   }
 
@@ -32,6 +27,26 @@ export default class CodeEditor extends Surface {
     if (this._monacoAdapter) {
       this._monacoAdapter.dispose()
     }
+  }
+
+  willReceiveProps (newProps) {
+    if (this.props.language !== newProps.language) {
+      this._monacoAdapter.dispose()
+      this._monacoAdapter = this._createMonacoAdapter(newProps)
+      this._activateMonacoAdapter()
+    }
+  }
+
+  _createMonacoAdapter (props) {
+    if (platform.inBrowser) {
+      return new window.monaco.SubstanceMonacoAdapter(this.getEditorSession(), props.path, props)
+    }
+  }
+
+  _activateMonacoAdapter () {
+    this._monacoAdapter.onDidChangeTokens(e => {
+      this.refs.content._onDidChangeTokens(e)
+    })
   }
 
   render ($$) {
@@ -47,8 +62,7 @@ export default class CodeEditor extends Surface {
       if (!this.props.disabled) {
         el.addClass('sm-enabled')
         el.attr('contenteditable', true)
-        // native spellcheck
-        el.attr('spellcheck', this.props.spellcheck === 'native')
+        el.attr('spellcheck', false)
       }
     } else {
       el.addClass('sm-readonly')

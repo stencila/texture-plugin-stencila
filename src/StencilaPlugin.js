@@ -1,19 +1,29 @@
 import { Texture } from 'substance-texture'
-import CodeEditor from './code-editor/CodeEditor'
-import RunCellCommand from './commands/RunCellCommand'
-import RunAllCellsCommand from './commands/RunAllCellsCommand'
-import StencilaCell from './StencilaCell'
-import StencilaCellComponent from './components/StencilaCellComponent'
-import StencilaCellConverter from './StencilaCellConverter'
-import StencilaInlineCell from './StencilaInlineCell'
-import StencilaInlineCellComponent from './components/StencilaInlineCellComponent'
-import StencilaInlineCellConverter from './StencilaInlineCellConverter'
-import StencilaCellService from './StencilaCellService'
-import JavascriptRuntimeService from './jsruntime/JavascriptRuntimeService'
+
+// nodes
+import StencilaCell from './nodes/StencilaCell'
+import StencilaInlineCell from './nodes/StencilaInlineCell'
+import StencilaConfiguration from './nodes/StencilaConfiguration'
+
+// converters
 import StencilaArticleJATSImporter from './StencilaArticleJATSImporter'
 import StencilaArticleJATSExporter from './StencilaArticleJATSExporter'
-import InsertCellCommand from './commands/InsertCellCommand'
-import InsertInlineCellCommand from './commands/InsertInlineCellCommand'
+import StencilaCellConverter from './StencilaCellConverter'
+import StencilaInlineCellConverter from './StencilaInlineCellConverter'
+// commands
+import InsertCell from './commands/InsertCell'
+import InsertInlineCell from './commands/InsertInlineCell'
+import RunAllCells from './commands/RunAllCells'
+import RunCell from './commands/RunCell'
+import RunCellAndAllBefore from './commands/RunCellAndAllBefore'
+import RunCellAndAllAfter from './commands/RunCellAndAllAfter'
+// components
+import CodeEditor from './code-editor/CodeEditor'
+import StencilaCellComponent from './components/StencilaCellComponent'
+import StencilaInlineCellComponent from './components/StencilaInlineCellComponent'
+// services
+import StencilaCellService from './StencilaCellService'
+import JavascriptRuntimeService from './runtimes/javascript/JavascriptRuntimeService'
 
 const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
 
@@ -32,6 +42,7 @@ Texture.registerPlugin({
     // register additional nodes for the internal article document model
     articleConfig.addNode(StencilaCell)
     articleConfig.addNode(StencilaInlineCell)
+    articleConfig.addNode(StencilaConfiguration)
 
     // TODO: we need a way to override existing node schemas, e.g. to allow insertion of a cell into the body
     // for now we HACK into the node's schema
@@ -53,19 +64,25 @@ Texture.registerPlugin({
       converterGroups: ['jats', RDS_JATS_PUBLIC_ID]
     })
 
-    articleConfig.addCommand(InsertCellCommand.id, InsertCellCommand, {
+    articleConfig.addCommand(InsertCell.id, InsertCell, {
       nodeType: StencilaCell.type,
       commandGroup: 'stencila:insert'
     })
-    articleConfig.addCommand(InsertInlineCellCommand.id, InsertInlineCellCommand, {
+    articleConfig.addCommand(InsertInlineCell.id, InsertInlineCell, {
       nodeType: StencilaInlineCell.type,
       commandGroup: 'stencila:insert'
     })
 
-    articleConfig.addCommand(RunCellCommand.id, RunCellCommand, {
+    articleConfig.addCommand(RunCell.id, RunCell, {
       commandGroup: 'stencila:run:contextual'
     })
-    articleConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand, {
+    articleConfig.addCommand(RunCellAndAllBefore.id, RunCellAndAllBefore, {
+      commandGroup: 'stencila:run:contextual'
+    })
+    articleConfig.addCommand(RunCellAndAllAfter.id, RunCellAndAllAfter, {
+      commandGroup: 'stencila:run:contextual'
+    })
+    articleConfig.addCommand(RunAllCells.id, RunAllCells, {
       commandGroup: 'stencila:run'
     })
 
@@ -73,7 +90,7 @@ Texture.registerPlugin({
     articleConfig.addComponent(StencilaCell.type, StencilaCellComponent)
     articleConfig.addComponent(StencilaInlineCell.type, StencilaInlineCellComponent)
 
-    articleConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCellCommand.id })
+    articleConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCell.id })
 
     articleConfig.addLabel('stencila:cell', 'Cell')
     articleConfig.addLabel('stencila:cell-menu', 'Cell')
@@ -83,8 +100,10 @@ Texture.registerPlugin({
     articleConfig.addLabel('stencila:insert-cell', 'Insert Cell')
     articleConfig.addLabel('stencila:insert-inline-cell', 'Insert Inline Cell')
     articleConfig.addLabel('stencila:run', 'Run')
-    articleConfig.addLabel('stencila:run-cell', 'Run Cell')
     articleConfig.addLabel('stencila:run-all-cells', 'Run All Cells')
+    articleConfig.addLabel('stencila:run-cell', 'Run Cell')
+    articleConfig.addLabel('stencila:run-cell-and-all-after', 'Run Cell and All Below')
+    articleConfig.addLabel('stencila:run-cell-and-all-before', 'Run Cell and All Above')
     articleConfig.addLabel('stencila:language', 'Language')
     articleConfig.addLabel('stencila:status:ok', 'ok')
     articleConfig.addLabel('stencila:status:not-evaluated', 'N/A')

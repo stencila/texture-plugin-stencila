@@ -1,5 +1,6 @@
 import { Component } from 'substance'
 import { NodeComponentMixin } from 'substance-texture'
+import StencilaConfiguration from '../nodes/StencilaConfiguration'
 
 export default class StencilaInlineCellEditor extends NodeComponentMixin(Component) {
   render ($$) {
@@ -64,12 +65,11 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
   }
 
   _getLang () {
-    // TODO: this should come from the document
-    return 'javascript'
+    return StencilaConfiguration.getLanguage(this.props.node.getDocument())
   }
 
   _getLangTitle () {
-    return 'Javascript'
+    return this.getLabel(`stencila:language:${this._getLang()}`)
   }
 
   _getNode () {

@@ -2,7 +2,7 @@ import { Command } from 'substance'
 import StencilaCellService from '../StencilaCellService'
 import StencilaCommandMixin from './_StencilaCommandMixin'
 
-export default class RunAllCellsCommand extends StencilaCommandMixin(Command) {
+export default class RunAllCells extends StencilaCommandMixin(Command) {
   static get id () { return 'stencila:run-all-cells' }
 
   getCommandState (params, context) {

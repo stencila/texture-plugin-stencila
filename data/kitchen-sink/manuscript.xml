@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//RDS/DTD Stencila Reproducible Documents DTD v1.0" "Stencila-JATS-1.0.dtd">
-<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:stencila="https://stenci.la/dtd/Stencila-JATS-1.0.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:stencila="https://stenci.la/dtd/Stencila-JATS-1.0.dtd" stencila:language="javascript">
   <front>
     <article-meta>
       <title-group>
