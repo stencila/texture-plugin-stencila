@@ -1,5 +1,5 @@
 import StencilaCommand from './_StencilaCommand'
-import StencilaCellService from './StencilaCellService'
+import StencilaCellService from '../StencilaCellService'
 
 export default class RunAllCellsCommand extends StencilaCommand {
   static get id () { return 'stencila:run-all-cells' }

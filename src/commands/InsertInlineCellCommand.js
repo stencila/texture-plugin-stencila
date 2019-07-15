@@ -1,5 +1,5 @@
 import { InsertInlineNodeCommand } from 'substance-texture'
-import StencilaInlineCell from './StencilaInlineCell'
+import StencilaInlineCell from '../StencilaInlineCell'
 
 export default class InsertInlineCellCommand extends InsertInlineNodeCommand {
   static get id () {

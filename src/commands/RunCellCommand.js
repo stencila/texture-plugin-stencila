@@ -1,7 +1,7 @@
 import StencilaCommand from './_StencilaCommand'
-import StencilaCell from './StencilaCell'
-import StencilaInlineCell from './StencilaInlineCell'
-import StencilaCellService from './StencilaCellService'
+import StencilaCell from '../StencilaCell'
+import StencilaInlineCell from '../StencilaInlineCell'
+import StencilaCellService from '../StencilaCellService'
 
 export default class RunCellCommand extends StencilaCommand {
   static get id () { return 'stencila:run-cell' }

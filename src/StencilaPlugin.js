@@ -1,19 +1,19 @@
 import { Texture } from 'substance-texture'
 import CodeEditor from './code-editor/CodeEditor'
-import RunCellCommand from './RunCellCommand'
-import RunAllCellsCommand from './RunAllCellsCommand'
+import RunCellCommand from './commands/RunCellCommand'
+import RunAllCellsCommand from './commands/RunAllCellsCommand'
 import StencilaCell from './StencilaCell'
-import StencilaCellComponent from './StencilaCellComponent'
+import StencilaCellComponent from './components/StencilaCellComponent'
 import StencilaCellConverter from './StencilaCellConverter'
 import StencilaInlineCell from './StencilaInlineCell'
-import StencilaInlineCellComponent from './StencilaInlineCellComponent'
+import StencilaInlineCellComponent from './components/StencilaInlineCellComponent'
 import StencilaInlineCellConverter from './StencilaInlineCellConverter'
 import StencilaCellService from './StencilaCellService'
 import JavascriptRuntimeService from './jsruntime/JavascriptRuntimeService'
 import StencilaArticleJATSImporter from './StencilaArticleJATSImporter'
 import StencilaArticleJATSExporter from './StencilaArticleJATSExporter'
-import InsertCellCommand from './InsertCellCommand'
-import InsertInlineCellCommand from './InsertInlineCellCommand'
+import InsertCellCommand from './commands/InsertCellCommand'
+import InsertInlineCellCommand from './commands/InsertInlineCellCommand'
 
 const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
 
@@ -54,14 +54,20 @@ Texture.registerPlugin({
     })
 
     articleConfig.addCommand(InsertCellCommand.id, InsertCellCommand, {
-      nodeType: StencilaCell.type
+      nodeType: StencilaCell.type,
+      commandGroup: 'stencila:insert'
     })
     articleConfig.addCommand(InsertInlineCellCommand.id, InsertInlineCellCommand, {
-      nodeType: StencilaInlineCell.type
+      nodeType: StencilaInlineCell.type,
+      commandGroup: 'stencila:insert'
     })
 
-    articleConfig.addCommand(RunCellCommand.id, RunCellCommand, { commandGroup: 'stencila:cells' })
-    articleConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand, { commandGroup: 'stencila:cells' })
+    articleConfig.addCommand(RunCellCommand.id, RunCellCommand, {
+      commandGroup: 'stencila:run:contextual'
+    })
+    articleConfig.addCommand(RunAllCellsCommand.id, RunAllCellsCommand, {
+      commandGroup: 'stencila:run'
+    })
 
     articleConfig.addComponent('code-editor', CodeEditor)
     articleConfig.addComponent(StencilaCell.type, StencilaCellComponent)
@@ -70,8 +76,13 @@ Texture.registerPlugin({
     articleConfig.addKeyboardShortcut('CommandOrControl+ENTER', { command: RunCellCommand.id })
 
     articleConfig.addLabel('stencila:cell', 'Cell')
+    articleConfig.addLabel('stencila:cell-menu', 'Cell')
     articleConfig.addLabel('stencila:cell-tools', 'Cell')
     articleConfig.addLabel('stencila:inline-cell', 'Inline Cell')
+    articleConfig.addLabel('stencila:insert', 'Insert')
+    articleConfig.addLabel('stencila:insert-cell', 'Insert Cell')
+    articleConfig.addLabel('stencila:insert-inline-cell', 'Insert Inline Cell')
+    articleConfig.addLabel('stencila:run', 'Run')
     articleConfig.addLabel('stencila:run-cell', 'Run Cell')
     articleConfig.addLabel('stencila:run-all-cells', 'Run All Cells')
     articleConfig.addLabel('stencila:language', 'Language')
@@ -83,10 +94,41 @@ Texture.registerPlugin({
     articleConfig.addIcon('stencila:expand-code', { 'fontawesome': 'fa-angle-right' })
     articleConfig.addIcon('stencila:collapse-code', { 'fontawesome': 'fa-angle-down' })
 
-    // EXPERIMENTAL: we do not have an easy way to extend the toolbar et al.
-    // for now this is needs understanding of the internal toolpanel layout
-    // until we understand better what we need
+    // EXPERIMENTAL: ATM there is no easy way to extend Texture's toolbar et al.
+    // for now it needs some understanding of the internal toolpanel layout
     articleConfig.extendToolPanel('toolbar', toolPanelConfig => {
+      let cellMenu = {
+        name: 'stencila:cell-menu',
+        type: 'dropdown',
+        style: 'descriptive',
+        hideDisabled: false,
+        alwaysVisible: true,
+        items: [
+          {
+            type: 'group',
+            name: 'stencila:insert',
+            style: 'descriptive',
+            label: 'stencila:insert',
+            items: [
+              { type: 'command-group', name: 'stencila:insert' }
+            ]
+          },
+          {
+            type: 'group',
+            name: 'stencila:run',
+            style: 'descriptive',
+            label: 'stencila:run',
+            items: [
+              { type: 'command-group', name: 'stencila:run' },
+              { type: 'command-group', name: 'stencila:run:contextual' }
+            ]
+          }
+        ]
+      }
+      // insert the cellMenu just before the divider
+      toolPanelConfig.splice(toolPanelConfig.findIndex(group => group.name === 'divider'), 0, cellMenu)
+
+      // TODO: discuss if we really want to extend Texture's Insert menu
       let insertTools = toolPanelConfig.find(group => group.name === 'insert')
       insertTools.items.find(group => group.name === 'content').items.push({ type: 'command', name: 'stencila:insert-cell', label: 'stencila:cell' })
       insertTools.items.find(group => group.name === 'inline-content').items.push({ type: 'command', name: 'stencila:insert-inline-cell', label: 'stencila:inline-cell' })
@@ -98,13 +140,13 @@ Texture.registerPlugin({
         style: 'descriptive',
         label: 'stencila:cell-tools',
         items: [
-          { type: 'command-group', name: 'stencila:cells' }
+          { type: 'command-group', name: 'stencila:run:contextual' }
         ]
       })
     })
     articleConfig.extendToolPanel('context-menu', toolPanelConfig => {
       toolPanelConfig[0].items.push(
-        { type: 'command-group', name: 'stencila:cells' }
+        { type: 'command-group', name: 'stencila:run:contextual' }
       )
     })
   }
