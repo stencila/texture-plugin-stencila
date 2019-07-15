@@ -1,4 +1,4 @@
-import { Component } from 'substance'
+import { Component, isNil } from 'substance'
 import { NodeComponentMixin } from 'substance-texture'
 import StencilaConfiguration from '../nodes/StencilaConfiguration'
 
@@ -54,7 +54,7 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
     )
     headerEl.append(statusEl)
 
-    if (nodeState.hasOwnProperty('evalCounter')) {
+    if (!isNil(nodeState.evalCounter)) {
       let countEl = $$('span').addClass('se-count').append(
         $$('span').addClass('se-count').text(`[${nodeState.evalCounter}]`)
       )

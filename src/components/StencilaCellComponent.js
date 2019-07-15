@@ -1,4 +1,4 @@
-import { Component, isPlainObject } from 'substance'
+import { Component, isPlainObject, isNil } from 'substance'
 import StencilaConfiguration from '../nodes/StencilaConfiguration'
 
 export default class StencillaCellComponent extends Component {
@@ -45,7 +45,7 @@ export default class StencillaCellComponent extends Component {
       )
     }
 
-    if (nodeState.hasOwnProperty('value')) {
+    if (!isNil(nodeState.value)) {
       el.append(
         this._renderValue($$, nodeState.value)
       )
@@ -85,7 +85,7 @@ export default class StencillaCellComponent extends Component {
     )
     headerEl.append(statusEl)
 
-    if (nodeState.hasOwnProperty('evalCounter')) {
+    if (!isNil(nodeState.evalCounter)) {
       let evalCounterEl = $$('div').addClass('se-eval-counter').text(`[${nodeState.evalCounter}]`)
       headerEl.append(evalCounterEl)
     }
@@ -154,11 +154,11 @@ export default class StencillaCellComponent extends Component {
 
   _getStatus () {
     let nodeState = this.props.node.state
+    let status
     if (nodeState) {
-      return nodeState.status
-    } else {
-      return 'not-evaluated'
+      status = nodeState.status
     }
+    return status || 'not-evaluated'
   }
 
   _getLang () {

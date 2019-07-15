@@ -1,4 +1,5 @@
 import StencilaConfiguration from './nodes/StencilaConfiguration'
+import StencilaCell from './nodes/StencilaCell';
 
 /**
  * This service provides the client side for running cells,
@@ -12,6 +13,7 @@ export default class StencileCellService {
     if (!this.editorSession) {
       throw new Error('Incompatible context')
     }
+    this.editorSession.getEditorState().addObserver(['document'], this._onLanguageChange, this, { stage: 'render', document: { path: [StencilaConfiguration.id, 'language'] } })
   }
 
   static create (context) {
@@ -48,7 +50,7 @@ export default class StencileCellService {
   }
 
   _runCells (cells) {
-    this._getLanguageService()
+    this._getRuntimeService()
       .then(service => {
         service.clearQueue()
         for (let cell of cells) {
@@ -59,8 +61,9 @@ export default class StencileCellService {
       })
       .catch(err => {
         // take the first cell to show the error
+        console.error(err)
         let firstCell = cells[0]
-        this._onResult({ id: firstCell.id, error: { description: err.message } })
+        this._onResult({ id: firstCell.id, error: { description: `No runtime available for language '${this._getLang()}'` } })
       })
   }
 
@@ -69,7 +72,12 @@ export default class StencileCellService {
     return doc.findAll('stencila-cell, stencila-inline-cell')
   }
 
-  _getLanguageService () {
+  _resetAllCells () {
+    let allCells = this._getAllCells()
+    this.editorSession.updateNodeStates(allCells.map(cell => [cell.id, StencilaCell.getInitialNodeState()]), { propagate: true })
+  }
+
+  _getRuntimeService () {
     return this.context.config.getService(`stencila:runtime:${this._getLang()}`, this.context)
   }
 
@@ -81,5 +89,12 @@ export default class StencileCellService {
     // TODO: do we really need this kind of call back, or would just 'res' be ok?
     res.status = res.error ? 'error' : 'ok'
     this.editorSession.updateNodeStates([[res.id, res]], { propagate: true })
+  }
+
+  _onLanguageChange () {
+    // Note: need to wait for the next cycle, so that the current change is propagated
+    setTimeout(() => {
+      this._resetAllCells()
+    })
   }
 }

@@ -1,0 +1,13 @@
+.sc-language-switcher {
+  font-size: var(--t-tiny-font-size);
+  margin: auto;
+}
+
+.sc-language-switcher > * {
+  display: inline-block;
+}
+
+.sc-tool-dropdown .sc-language-switcher select {
+  /* height: 30px; */
+  width: 100%;
+}

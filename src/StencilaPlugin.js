@@ -21,6 +21,8 @@ import RunCellAndAllAfter from './commands/RunCellAndAllAfter'
 import CodeEditor from './code-editor/CodeEditor'
 import StencilaCellComponent from './components/StencilaCellComponent'
 import StencilaInlineCellComponent from './components/StencilaInlineCellComponent'
+import LanguageSwitcher from './components/LanguageSwitcher'
+
 // services
 import StencilaCellService from './StencilaCellService'
 import JavascriptRuntimeService from './runtimes/javascript/JavascriptRuntimeService'
@@ -73,18 +75,11 @@ Texture.registerPlugin({
       commandGroup: 'stencila:insert'
     })
 
-    articleConfig.addCommand(RunCell.id, RunCell, {
-      commandGroup: 'stencila:run:contextual'
-    })
-    articleConfig.addCommand(RunCellAndAllBefore.id, RunCellAndAllBefore, {
-      commandGroup: 'stencila:run:contextual'
-    })
-    articleConfig.addCommand(RunCellAndAllAfter.id, RunCellAndAllAfter, {
-      commandGroup: 'stencila:run:contextual'
-    })
-    articleConfig.addCommand(RunAllCells.id, RunAllCells, {
-      commandGroup: 'stencila:run'
-    })
+    articleConfig.addCommand(RunAllCells.id, RunAllCells)
+    articleConfig.addCommand(RunCell.id, RunCell, { commandGroup: 'stencila:run:contextual' })
+    articleConfig.addCommand(RunCellAndAllBefore.id, RunCellAndAllBefore, { commandGroup: 'stencila:run:contextual' })
+    articleConfig.addCommand(RunCellAndAllAfter.id, RunCellAndAllAfter, { commandGroup: 'stencila:run:contextual' })
+    articleConfig.addCommand(RunAllCells.id + ':global', RunAllCells, { commandGroup: 'stencila:run', global: true })
 
     articleConfig.addComponent('code-editor', CodeEditor)
     articleConfig.addComponent(StencilaCell.type, StencilaCellComponent)
@@ -94,6 +89,7 @@ Texture.registerPlugin({
 
     articleConfig.addLabel('stencila:cell', 'Cell')
     articleConfig.addLabel('stencila:cell-menu', 'Cell')
+    articleConfig.addLabel('stencila:cell-language', 'Cell Language')
     articleConfig.addLabel('stencila:cell-tools', 'Cell')
     articleConfig.addLabel('stencila:inline-cell', 'Inline Cell')
     articleConfig.addLabel('stencila:insert', 'Insert')
@@ -101,10 +97,15 @@ Texture.registerPlugin({
     articleConfig.addLabel('stencila:insert-inline-cell', 'Insert Inline Cell')
     articleConfig.addLabel('stencila:run', 'Run')
     articleConfig.addLabel('stencila:run-all-cells', 'Run All Cells')
+    articleConfig.addLabel('stencila:run-all-cells:global', 'Run All Cells')
     articleConfig.addLabel('stencila:run-cell', 'Run Cell')
     articleConfig.addLabel('stencila:run-cell-and-all-after', 'Run Cell and All Below')
     articleConfig.addLabel('stencila:run-cell-and-all-before', 'Run Cell and All Above')
     articleConfig.addLabel('stencila:language', 'Language')
+    articleConfig.addLabel('stencila:language:javascript', 'Javascript')
+    articleConfig.addLabel('stencila:language:julia', 'Julia')
+    articleConfig.addLabel('stencila:language:python', 'Python')
+    articleConfig.addLabel('stencila:language:r', 'R')
     articleConfig.addLabel('stencila:status:ok', 'ok')
     articleConfig.addLabel('stencila:status:not-evaluated', 'N/A')
     articleConfig.addLabel('stencila:status:error', 'error')
@@ -141,6 +142,14 @@ Texture.registerPlugin({
               { type: 'command-group', name: 'stencila:run' },
               { type: 'command-group', name: 'stencila:run:contextual' }
             ]
+          },
+          {
+            type: 'group',
+            name: 'stencila:language',
+            label: 'stencila:language',
+            items: [
+              { type: 'custom', name: 'stencila:language', ToolClass: LanguageSwitcher }
+            ]
           }
         ]
       }
@@ -152,19 +161,20 @@ Texture.registerPlugin({
       insertTools.items.find(group => group.name === 'content').items.push({ type: 'command', name: 'stencila:insert-cell', label: 'stencila:cell' })
       insertTools.items.find(group => group.name === 'inline-content').items.push({ type: 'command', name: 'stencila:insert-inline-cell', label: 'stencila:inline-cell' })
 
-      let contextTools = toolPanelConfig.find(group => group.name === 'context-tools')
-      contextTools.items.push({
-        type: 'group',
-        name: 'stencila:cells',
-        style: 'descriptive',
-        label: 'stencila:cell-tools',
-        items: [
-          { type: 'command-group', name: 'stencila:run:contextual' }
-        ]
-      })
+      // let contextTools = toolPanelConfig.find(group => group.name === 'context-tools')
+      // contextTools.items.push({
+      //   type: 'group',
+      //   name: 'stencila:cells',
+      //   style: 'descriptive',
+      //   label: 'stencila:cell-tools',
+      //   items: [
+      //     { type: 'command-group', name: 'stencila:run:contextual' }
+      //   ]
+      // })
     })
     articleConfig.extendToolPanel('context-menu', toolPanelConfig => {
       toolPanelConfig[0].items.push(
+        { type: 'command', name: RunAllCells.id },
         { type: 'command-group', name: 'stencila:run:contextual' }
       )
     })

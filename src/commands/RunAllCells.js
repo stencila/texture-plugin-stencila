@@ -1,17 +1,22 @@
-import { Command } from 'substance'
 import StencilaCellService from '../StencilaCellService'
-import StencilaCommandMixin from './_StencilaCommandMixin'
+import CellCommand from './_CellCommand'
 
-export default class RunAllCells extends StencilaCommandMixin(Command) {
+export default class RunAllCells extends CellCommand {
   static get id () { return 'stencila:run-all-cells' }
 
   getCommandState (params, context) {
-    return { disabled: false }
+    if (this.config.global) {
+      return { disabled: false }
+    } else {
+      return super.getCommandState(params, context)
+    }
   }
 
   execute (params, context) {
     context.config.getService(StencilaCellService.id, context).then(service => {
       service.runAll()
     })
+    // HACK: without a selection change the dropdown stays open
+    context.editorSession.getRootComponent().send('toggleOverlay')
   }
 }

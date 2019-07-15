@@ -11,6 +11,9 @@ export default class StencilaConfiguration extends DocumentNode {
     let stencilaConfig = StencilaConfiguration.getConfiguration(doc)
     return stencilaConfig.language
   }
+  static getLanguages () {
+    return this.schema.getProperty('language').values
+  }
 }
 
 StencilaConfiguration.schema = {
