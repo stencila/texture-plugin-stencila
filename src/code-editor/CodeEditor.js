@@ -64,17 +64,21 @@ export default class CodeEditor extends Surface {
   }
 
   // this is needed e.g. by SelectAllCommand
-  get _isTextPropertyEditor () {
-    return true
-  }
-
-  // this is needed e.g. by SelectAllCommand
   getPath () {
     return this.props.path
   }
 
   type (ch) {
     this._monacoAdapter._type(ch)
+  }
+
+  selectFirst () {
+    this.getEditorSession().setSelection({
+      type: 'property',
+      path: this.props.path,
+      startOffset: 0,
+      surfaceId: this.id
+    })
   }
 
   _handleEnterKey (event) {
@@ -101,5 +105,10 @@ export default class CodeEditor extends Surface {
     editorSession.transaction(tx => {
       tx.insertText('\n')
     }, { action: 'soft-break' })
+  }
+
+  // HACK: this is needed e.g. by SelectAllCommand
+  get _isTextPropertyEditor () {
+    return true
   }
 }
