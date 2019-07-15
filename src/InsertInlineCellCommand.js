@@ -11,6 +11,7 @@ export default class InsertInlineCellCommand extends InsertInlineNodeCommand {
   }
 
   execute (params, context) {
-    context.api._insertInlineNode(tx => tx.create({ type: StencilaInlineCell.type }))
+    let inlineCell = context.api.insertInlineNode({ type: StencilaInlineCell.type })
+    context.api.focusEditor([inlineCell.id, 'source'])
   }
 }
