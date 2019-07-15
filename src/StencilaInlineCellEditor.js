@@ -18,20 +18,19 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
     }).ref('editor')
     el.append(editor)
 
-    if (nodeState.errors) {
-      el.append(this._renderErrors($$, nodeState.errors))
+    if (nodeState.error) {
+      el.append(this._renderError($$, nodeState.error))
     }
 
     return el
   }
 
-  _renderErrors ($$, errors) {
+  _renderError ($$, error) {
     let errorsEl = $$('div').addClass('se-errors')
+    // NOTE: at the moment there is only one error
     errorsEl.append(
-      errors.map(err => {
-        // TODO: we have to specify a common format for errors
-        return $$('div').addClass('se-error').text(err.description)
-      })
+      // TODO: we have to specify a common format for errors
+      $$('div').addClass('se-error').text(error.description)
     )
     return errorsEl
   }
