@@ -31,9 +31,9 @@ export default class CodeEditor extends Surface {
 
   willReceiveProps (newProps) {
     if (this.props.language !== newProps.language) {
-      this._monacoAdapter.dispose()
-      this._monacoAdapter = this._createMonacoAdapter(newProps)
-      this._activateMonacoAdapter()
+      if (this._monacoAdapter) {
+        this._monacoAdapter.setLanguage(newProps.language)
+      }
     }
   }
 
