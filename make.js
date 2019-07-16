@@ -16,7 +16,7 @@ b.task('build', ['clean', 'build:assets', 'build:monaco', 'build:demo', 'build:p
 b.task('default', ['clean', 'build'])
 
 b.task('build:plugin', () => {
-  b.js('src/texture-plugin-stencila.js', {
+  b.js('index.js', {
     output: [{
       file: DIST + 'texture-plugin-stencila.js',
       format: 'umd',

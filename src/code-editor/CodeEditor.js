@@ -10,19 +10,14 @@ export default class CodeEditor extends Surface {
   constructor (parent, props, opts) {
     super(parent, _withName(props), opts)
 
-    // TODO: what do we do in nodejs?
-    if (platform.inBrowser) {
-      this._monacoAdapter = new window.monaco.SubstanceMonacoAdapter(this.getEditorSession(), this.props.path, this.props)
-    }
+    this._monacoAdapter = this._createMonacoAdapter(this.props)
   }
 
   didMount () {
     super.didMount()
 
     if (this._monacoAdapter) {
-      this._monacoAdapter.onDidChangeTokens(e => {
-        this.refs.content._onDidChangeTokens(e)
-      })
+      this._activateMonacoAdapter()
     }
   }
 
@@ -32,6 +27,26 @@ export default class CodeEditor extends Surface {
     if (this._monacoAdapter) {
       this._monacoAdapter.dispose()
     }
+  }
+
+  willReceiveProps (newProps) {
+    if (this.props.language !== newProps.language) {
+      if (this._monacoAdapter) {
+        this._monacoAdapter.setLanguage(newProps.language)
+      }
+    }
+  }
+
+  _createMonacoAdapter (props) {
+    if (platform.inBrowser) {
+      return new window.monaco.SubstanceMonacoAdapter(this.getEditorSession(), props.path, props)
+    }
+  }
+
+  _activateMonacoAdapter () {
+    this._monacoAdapter.onDidChangeTokens(e => {
+      this.refs.content._onDidChangeTokens(e)
+    })
   }
 
   render ($$) {
@@ -47,8 +62,7 @@ export default class CodeEditor extends Surface {
       if (!this.props.disabled) {
         el.addClass('sm-enabled')
         el.attr('contenteditable', true)
-        // native spellcheck
-        el.attr('spellcheck', this.props.spellcheck === 'native')
+        el.attr('spellcheck', false)
       }
     } else {
       el.addClass('sm-readonly')
@@ -64,17 +78,21 @@ export default class CodeEditor extends Surface {
   }
 
   // this is needed e.g. by SelectAllCommand
-  get _isTextPropertyEditor () {
-    return true
-  }
-
-  // this is needed e.g. by SelectAllCommand
   getPath () {
     return this.props.path
   }
 
   type (ch) {
     this._monacoAdapter._type(ch)
+  }
+
+  selectFirst () {
+    this.getEditorSession().setSelection({
+      type: 'property',
+      path: this.props.path,
+      startOffset: 0,
+      surfaceId: this.id
+    })
   }
 
   _handleEnterKey (event) {
@@ -89,10 +107,13 @@ export default class CodeEditor extends Surface {
   }
 
   _handleTabKey (event) {
+    // TODO: implement indent/outdent based on Monaco's TypeOperations
+    event.stopPropagation()
+    event.preventDefault()
     if (event.shiftKey) {
       console.log('TODO: dedent current line')
     } else {
-      console.log('TODO: indent current line')
+      this.type('  ')
     }
   }
 
@@ -101,5 +122,10 @@ export default class CodeEditor extends Surface {
     editorSession.transaction(tx => {
       tx.insertText('\n')
     }, { action: 'soft-break' })
+  }
+
+  // HACK: this is needed e.g. by SelectAllCommand
+  get _isTextPropertyEditor () {
+    return true
   }
 }

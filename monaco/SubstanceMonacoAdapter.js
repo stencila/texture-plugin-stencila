@@ -32,14 +32,6 @@ export default class SubstanceMonacoAdapter extends Disposable {
     this._editorSession = editorSession
     this._sourcePath = sourcePath
 
-    let doc = editorSession.getDocument()
-    let source = doc.get(sourcePath)
-    let language = options.language || 'javascript'
-
-    // TODO: language should come from the document as well
-    let languageSelection = StaticServices.modeService.get().create(language)
-    this._languageIdentifier = languageSelection.languageIdentifier
-
     // TODO: this could come from configuration
     this._modelOptions = {
       defaultEOL: 1,
@@ -48,11 +40,9 @@ export default class SubstanceMonacoAdapter extends Disposable {
       tabSize: 2,
       trimAutoWhitespace: false
     }
-    let config = new Configuration({ language, value: source }, null, new StubAccessibilityService())
-    this._config = config
-
+    let source = editorSession.getDocument().get(sourcePath)
     this._buffer = createTextBuffer(source, this._modelOptions.defaultEOL)
-    this._cursorConfig = new CursorConfiguration(this._languageIdentifier, this._modelOptions, this._config)
+
     this._tokenizationListener = TokenizationRegistry.onDidChange(e => this._onTokenizerDidChange(e))
     this._onDidChangeTokens = this._register(new Emitter())
     this.onDidChangeTokens = this._onDidChangeTokens.event
@@ -67,8 +57,21 @@ export default class SubstanceMonacoAdapter extends Disposable {
     this._isDisposed = false
     this._isDisposing = false
 
-    // init
-    this._resetTokenizationState()
+    this.setLanguage(options.language)
+  }
+
+  setLanguage (language) {
+    if (this._language !== language) {
+      // TODO: language should come from the document as well
+      let source = this._editorSession.getDocument().get(this._sourcePath)
+      let languageSelection = StaticServices.modeService.get().create(language)
+      this._languageIdentifier = languageSelection.languageIdentifier
+      let config = new Configuration({ language, value: source }, null, new StubAccessibilityService())
+      this._language = language
+      this._config = config
+      this._cursorConfig = new CursorConfiguration(this._languageIdentifier, this._modelOptions, this._config)
+      this._resetTokenizationState()
+    }
   }
 
   emitModelTokensChangedEvent (e) {
@@ -354,6 +357,14 @@ export default class SubstanceMonacoAdapter extends Disposable {
       tx.setSelection(sel.createWithNewRange(newOffset, newOffset))
     }, { action: 'type' })
   }
+
+  /*
+    TODO: indent/outdent
+    There are TypeOperations.indent() and outdent()
+    which return commands that need be mapped to ops
+    similar as above the type() implementation
+    see cursorTypeOperations.js
+  */
 
   _createMonacoSelection (sel) {
     if (sel.isPropertySelection()) {

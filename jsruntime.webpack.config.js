@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-  entry: './src/jsruntime/JavascriptRuntimeWorker.js',
+  entry: './src/runtimes/javascript/JavascriptRuntimeWorker.js',
   output: {
     path: path.resolve(__dirname, 'dist', 'lib', 'jsruntime'),
     filename: 'worker.js'

@@ -1,0 +1,24 @@
+.sc-stencila-html-value > table {
+  table-layout: fixed;
+  margin: auto;
+}
+
+.sc-stencila-html-value > table {
+  table-layout: fixed;
+  overflow-wrap: break-word;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.sc-stencila-html-value > table th {
+  background-color: var(--t-light-background-color);
+  border: var(--t-default-border);
+  font-weight: var(--t-bold-font-weight);
+  padding: var(--t-cell-padding);
+}
+
+.sc-stencila-html-value > table td {
+  border: var(--t-default-border);
+  font-size: var(--t-small-font-size);
+  padding: var(--t-cell-padding);
+}

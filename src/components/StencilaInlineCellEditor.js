@@ -1,5 +1,6 @@
-import { Component } from 'substance'
+import { Component, isNil, keys } from 'substance'
 import { NodeComponentMixin } from 'substance-texture'
+import StencilaConfiguration from '../nodes/StencilaConfiguration'
 
 export default class StencilaInlineCellEditor extends NodeComponentMixin(Component) {
   render ($$) {
@@ -18,20 +19,21 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
     }).ref('editor')
     el.append(editor)
 
-    if (nodeState.errors) {
-      el.append(this._renderErrors($$, nodeState.errors))
+    el.on('keydown', this._onKeydown)
+
+    if (nodeState.error) {
+      el.append(this._renderError($$, nodeState.error))
     }
 
     return el
   }
 
-  _renderErrors ($$, errors) {
+  _renderError ($$, error) {
     let errorsEl = $$('div').addClass('se-errors')
+    // NOTE: at the moment there is only one error
     errorsEl.append(
-      errors.map(err => {
-        // TODO: we have to specify a common format for errors
-        return $$('div').addClass('se-error').text(err.description)
-      })
+      // TODO: we have to specify a common format for errors
+      $$('div').addClass('se-error').text(error.description)
     )
     return errorsEl
   }
@@ -54,7 +56,7 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
     )
     headerEl.append(statusEl)
 
-    if (nodeState.hasOwnProperty('evalCounter')) {
+    if (!isNil(nodeState.evalCounter)) {
       let countEl = $$('span').addClass('se-count').append(
         $$('span').addClass('se-count').text(`[${nodeState.evalCounter}]`)
       )
@@ -65,12 +67,11 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
   }
 
   _getLang () {
-    // TODO: this should come from the document
-    return 'javascript'
+    return StencilaConfiguration.getLanguage(this.props.node.getDocument())
   }
 
   _getLangTitle () {
-    return 'Javascript'
+    return this.getLabel(`stencila:language:${this._getLang()}`)
   }
 
   _getNode () {
@@ -84,6 +85,16 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
       return nodeState.status
     } else {
       return 'not-evaluated'
+    }
+  }
+
+  _onKeydown (e) {
+    if (e.keyCode === keys.ESCAPE) {
+      e.stopPropagation()
+      e.preventDefault()
+      // NOTE: InlineNodeComponents (as all IsolatedNodeComponents) have
+      // an 'escape' action which selects the node
+      this.send('escape')
     }
   }
 }

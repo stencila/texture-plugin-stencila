@@ -1,4 +1,4 @@
-import { isString } from 'substance'
+import { isString, isNil } from 'substance'
 import { NodeOverlayEditorMixin } from 'substance-texture'
 import StencillaCellComponent from './StencilaCellComponent'
 import StencilaInlineCellEditor from './StencilaInlineCellEditor'
@@ -16,7 +16,9 @@ export default class StencillaInlineCellComponent extends NodeOverlayEditorMixin
   _renderValue ($$, value) {
     let node = this.props.node
     let nodeState = node.state || {}
-    if (nodeState.hasOwnProperty('value')) {
+    if (!isNil(nodeState.error)) {
+      return 'ERR'
+    } else if (!isNil(nodeState.value)) {
       let value = nodeState.value
       // complex objects are problematic for inline-cells
       // thus show only a short version for these
@@ -26,7 +28,7 @@ export default class StencillaInlineCellComponent extends NodeOverlayEditorMixin
         return value
       }
     } else {
-      return 'undefined'
+      return 'N/A'
     }
   }
 

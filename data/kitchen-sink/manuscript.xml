@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//RDS/DTD Stencila Reproducible Documents DTD v1.0" "Stencila-JATS-1.0.dtd">
-<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:stencila="https://stenci.la/dtd/Stencila-JATS-1.0.dtd">
+<article xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:stencila="https://stenci.la/dtd/Stencila-JATS-1.0.dtd" stencila:language="javascript">
   <front>
     <article-meta>
       <title-group>
@@ -32,6 +32,16 @@
     </stencila:cell>
     <p>This is an inline-cell: <stencila:inline-cell><stencila:source><![CDATA[y / 3]]></stencila:source></stencila:inline-cell>.</p>
     <p id="p-6">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec convallis augue ut orci finibus laoreet. Aliquam venenatis ante scelerisque lectus malesuada, ut blandit leo facilisis. Integer at egestas urna. Nulla facilisi. Quisque imperdiet fermentum euismod. Donec vestibulum semper lorem id accumsan. In ut ligula at enim tempus dictum in nec sapien. Sed suscipit aliquam sapien sit amet cursus. Integer tincidunt est nulla, sit amet bibendum sem condimentum in. Nulla bibendum non lorem eget feugiat. Mauris metus libero, euismod sed ante vitae, euismod commodo leo. Aliquam cursus, tellus at rhoncus molestie, orci sapien iaculis massa, vitae venenatis justo quam eget dolor. Integer mollis imperdiet nunc, vel condimentum magna euismod nec. Mauris ornare, tortor vitae suscipit hendrerit, nunc sem congue ante, nec elementum lorem lorem lacinia magna. Donec vehicula, nisi eget facilisis egestas, dolor urna fringilla nisl, blandit vulputate quam ante vel magna. Nulla vitae maximus massa.</p>
+    <sec id="data">
+      <title>Datasets</title>
+      <supplementary-material id="icecream" mimetype="text" mime-subtype="csv" xlink:href="icecream.csv">
+        <label>Supplementary File 1</label>
+        <caption>
+          <title>Icecream: Ice Cream Consumption</title>
+          <p id="icecream-p-1">four–weekly observations from 1951–03–18 to 1953–07–11<break/>number of observations : 30<break/>observation : country<break/>country : United States</p>
+        </caption>
+      </supplementary-material>
+    </sec>
   </body>
   <back />
 </article>

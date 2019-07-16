@@ -1,15 +1,25 @@
-import { Component, isPlainObject } from 'substance'
+import { Component, isPlainObject, isNil } from 'substance'
+import StencilaConfiguration from '../nodes/StencilaConfiguration'
+import StencileImageComponent from './StencilaImageComponent'
+import StencilaHTMLValueComponent from './StencilaHTMLValueComponent'
 
 export default class StencillaCellComponent extends Component {
   didMount () {
-    this.context.appState.addObserver(['document'], this._onNodeUpdate, this, {
+    // rerender when node state has changed
+    this.context.editorState.addObserver(['document'], this._onNodeUpdate, this, {
       stage: 'render',
       document: { path: [this.props.node.id] }
+    })
+    // rerender when lanuage has changed
+    // this is necessary, because language is passed as a prop to CodeEditor
+    this.context.editorState.addObserver(['document'], this.rerender, this, {
+      stage: 'render',
+      document: { path: [StencilaConfiguration.id, 'language'] }
     })
   }
 
   dispose () {
-    this.context.appState.removeObserver(this)
+    this.context.editorState.removeObserver(this)
   }
 
   getInitialState () {
@@ -27,11 +37,11 @@ export default class StencillaCellComponent extends Component {
     el.append(this._renderHeader($$))
 
     if (this.state.showCode) {
+      let doc = node.getDocument()
       let editor = $$(CodeEditor, {
-        document: node.getDocument(),
+        document: doc,
         path: [node.id, 'source'],
-        // TODO: the language should come from the Notebook
-        language: 'javascript'
+        language: this._getLang()
       }).ref('editor')
       el.append(
         editor
@@ -44,7 +54,7 @@ export default class StencillaCellComponent extends Component {
       )
     }
 
-    if (nodeState.hasOwnProperty('value')) {
+    if (!isNil(nodeState.value) && !nodeState.assignment) {
       el.append(
         this._renderValue($$, nodeState.value)
       )
@@ -61,9 +71,16 @@ export default class StencillaCellComponent extends Component {
     let status = this._getStatus()
     headerEl.addClass(`sm-${status}`)
 
-    let toggleSource = $$('div').addClass('se-toggle-source').append(
-      this.context.iconProvider.renderIcon($$, this.state.showCode ? 'stencila:collapse-code' : 'stencila:expand-code')
-    )
+    let toggleSource = $$('div').addClass('se-toggle-source')
+    if (this.state.showCode) {
+      toggleSource.append(
+        this.context.iconProvider.renderIcon($$, 'stencila:collapse-code')
+      ).addClass('sm-expanded')
+    } else {
+      toggleSource.append(
+        this.context.iconProvider.renderIcon($$, 'stencila:expand-code')
+      ).addClass('sm-collapsed')
+    }
     headerEl.append(toggleSource)
 
     let langEl = $$('div').addClass('se-title').text(this._getTitle())
@@ -77,7 +94,7 @@ export default class StencillaCellComponent extends Component {
     )
     headerEl.append(statusEl)
 
-    if (nodeState.hasOwnProperty('evalCounter')) {
+    if (!isNil(nodeState.evalCounter)) {
       let evalCounterEl = $$('div').addClass('se-eval-counter').text(`[${nodeState.evalCounter}]`)
       headerEl.append(evalCounterEl)
     }
@@ -100,7 +117,7 @@ export default class StencillaCellComponent extends Component {
           case 'blob': {
             if (value.mimeType && value.mimeType.startsWith('image')) {
               valueEl.append(
-                $$(ImageComponent, { value })
+                $$(StencileImageComponent, { value })
               )
             } else {
               valueEl.append('Unknown blob type')
@@ -108,11 +125,9 @@ export default class StencillaCellComponent extends Component {
             break
           }
           case 'html': {
-            // TODO: prevent HTML injection by stripping
-            if (value.html && value.html.indexOf(/[<]\s*script/) > -1) {
-              throw new Error('Dangerous HTML is prohibited')
-            }
-            valueEl.html(value.html)
+            valueEl.append(
+              $$(StencilaHTMLValueComponent, { value })
+            )
             break
           }
           default: {
@@ -146,56 +161,18 @@ export default class StencillaCellComponent extends Component {
 
   _getStatus () {
     let nodeState = this.props.node.state
+    let status
     if (nodeState) {
-      return nodeState.status
-    } else {
-      return 'not-evaluated'
+      status = nodeState.status
     }
+    return status || 'not-evaluated'
   }
 
   _getLang () {
-    return 'javascript'
+    return StencilaConfiguration.getLanguage(this.props.node.getDocument())
   }
 
   _getTitle () {
     return `Cell`
-  }
-}
-
-class ImageComponent extends Component {
-  dispose () {
-    this._dispose()
-  }
-
-  willReceiveProps (newProps) {
-    this._dispose()
-    this._createBlobUrl()
-  }
-
-  render ($$) {
-    return $$('img').attr('src', this._getUrl())
-  }
-
-  _createBlobUrl () {
-    let blob = this.props.value.blob
-    if (blob) {
-      this._blobUrl = URL.createObjectURL(blob)
-    }
-    return this._blobUrl
-  }
-
-  _dispose () {
-    if (this._blobUrl) {
-      window.URL.revokeObjectURL(this._blobUrl)
-      this._blobUrl = null
-    }
-  }
-
-  _getUrl () {
-    if (this.props.url) return this.props.url
-    if (this._blobUrl) return this._blobUrl
-    if (this.props.blob) {
-      return this._createBlobUrl()
-    }
   }
 }

@@ -8,12 +8,12 @@ export default class SourceCodeComponent extends TextPropertyComponent {
     // instead we are listening to changes to the source, and mapping them into the
     // monaco model. As a result, a list of inserts, deletes, and updates are recorded
     // which are applied to the DOM in the 'render' stage
-    this.context.appState.addObserver(['document'], this._onChange, this, { stage: 'update', document: { path: this.getPath() } })
-    this.context.appState.addObserver(['document'], this._renderChanges, this, { stage: 'render', document: { path: this.getPath() } })
+    this.context.editorState.addObserver(['document'], this._onChange, this, { stage: 'update', document: { path: this.getPath() } })
+    this.context.editorState.addObserver(['document'], this._renderChanges, this, { stage: 'render', document: { path: this.getPath() } })
   }
 
   dispose () {
-    this.context.appState.off(this)
+    this.context.editorState.off(this)
   }
 
   shouldRerender () { return false }

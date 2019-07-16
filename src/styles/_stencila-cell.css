@@ -17,7 +17,7 @@
   white-space: pre;
 }
 
-.sc-stencila-cell > .se-errors > .se-error {
+.sc-stencila-cell > .se-error {
   padding: var(--t-half-spacing) var(--t-half-spacing);
   white-space: pre;
   background-color: var(--stencila-error-background-color);
@@ -39,14 +39,19 @@
   flex-grow: 1;
 }
 
+/*
 .sc-stencila-cell .se-header > * + * {
   margin-left: var(--t-half-spacing);
 }
+*/
 
 .sc-stencila-cell .se-header > .se-toggle-source {
+  /*
   background: var(--t-action-color);
   color: var(--t-inverted-text-color);
-  border-radius: 2px;
+  */
+  color: var(--t-action-color);
+  border-radius: 4px;
   padding: 1px;
   min-width: var(--t-text-font-size);
   text-align: center;
