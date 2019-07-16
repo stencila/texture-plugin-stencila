@@ -1,5 +1,6 @@
 @import './_stencila-variables.css';
 @import './_stencila-cell.css';
+@import './_stencila-cell-values.css';
 @import './_stencila-inline-cell.css';
 @import './_stencila-inline-cell-editor.css';
 @import './_stencila-language-switcher.css';
