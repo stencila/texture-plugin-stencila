@@ -142,35 +142,37 @@ Texture.registerPlugin({
               { type: 'command-group', name: 'stencila:run' },
               { type: 'command-group', name: 'stencila:run:contextual' }
             ]
-          },
-          {
-            type: 'group',
-            name: 'stencila:language',
-            label: 'stencila:language',
-            items: [
-              { type: 'custom', name: 'stencila:language', ToolClass: LanguageSwitcher }
-            ]
           }
+          // {
+          //   type: 'group',
+          //   name: 'stencila:language',
+          //   label: 'stencila:language',
+          //   items: [
+          //     { type: 'custom', name: 'stencila:language', ToolClass: LanguageSwitcher }
+          //   ]
+          // }
         ]
       }
+      let languageSwitcher = { type: 'custom', name: 'stencila:language', ToolClass: LanguageSwitcher }
+
       // insert the cellMenu just before the divider
-      toolPanelConfig.splice(toolPanelConfig.findIndex(group => group.name === 'divider'), 0, cellMenu)
+      toolPanelConfig.splice(toolPanelConfig.findIndex(group => group.name === 'divider'), 0, cellMenu, languageSwitcher)
 
       // TODO: discuss if we really want to extend Texture's Insert menu
       let insertTools = toolPanelConfig.find(group => group.name === 'insert')
       insertTools.items.find(group => group.name === 'content').items.push({ type: 'command', name: 'stencila:insert-cell', label: 'stencila:cell' })
       insertTools.items.find(group => group.name === 'inline-content').items.push({ type: 'command', name: 'stencila:insert-inline-cell', label: 'stencila:inline-cell' })
 
-      // let contextTools = toolPanelConfig.find(group => group.name === 'context-tools')
-      // contextTools.items.push({
-      //   type: 'group',
-      //   name: 'stencila:cells',
-      //   style: 'descriptive',
-      //   label: 'stencila:cell-tools',
-      //   items: [
-      //     { type: 'command-group', name: 'stencila:run:contextual' }
-      //   ]
-      // })
+      let contextTools = toolPanelConfig.find(group => group.name === 'context-tools')
+      contextTools.items.push({
+        type: 'group',
+        name: 'stencila:cells',
+        style: 'descriptive',
+        label: 'stencila:cell-tools',
+        items: [
+          { type: 'command-group', name: 'stencila:run:contextual' }
+        ]
+      })
     })
     articleConfig.extendToolPanel('context-menu', toolPanelConfig => {
       toolPanelConfig[0].items.push(
