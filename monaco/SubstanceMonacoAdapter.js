@@ -358,6 +358,14 @@ export default class SubstanceMonacoAdapter extends Disposable {
     }, { action: 'type' })
   }
 
+  /*
+    TODO: indent/outdent
+    There are TypeOperations.indent() and outdent()
+    which return commands that need be mapped to ops
+    similar as above the type() implementation
+    see cursorTypeOperations.js
+  */
+
   _createMonacoSelection (sel) {
     if (sel.isPropertySelection()) {
       let startPosition = this.getPositionAt(sel.start.offset)

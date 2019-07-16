@@ -107,10 +107,13 @@ export default class CodeEditor extends Surface {
   }
 
   _handleTabKey (event) {
+    // TODO: implement indent/outdent based on Monaco's TypeOperations
+    event.stopPropagation()
+    event.preventDefault()
     if (event.shiftKey) {
       console.log('TODO: dedent current line')
     } else {
-      console.log('TODO: indent current line')
+      this.type('  ')
     }
   }
 
