@@ -24,6 +24,10 @@ export class AbstractRuntimeService {
     this.queue = []
 
     this.evalCounter = 0
+
+    // listen for archive changes
+    // TODO: this should be easier, without listening to an internal event
+    context.archive.getDocument('manifest').on('document:changed:internal', this._onManifestChange, this)
   }
 
   _cancelExecutionRequest (request) {
@@ -232,6 +236,20 @@ export class AbstractRuntimeService {
     this._bootup.reject()
     this._bootup = null
     this.clearQueue()
+  }
+
+  _onManifestChange (change) {
+    if (this.state < SYNCING) return
+    let needsSync = false
+    for (let op of change.ops) {
+      if (op.isCreate() && op.val.type === 'asset') {
+        needsSync = true
+        break
+      }
+    }
+    if (needsSync) {
+      this.state = Math.min(this.state, RUNNING)
+    }
   }
 }
 
