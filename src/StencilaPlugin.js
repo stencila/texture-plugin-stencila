@@ -27,7 +27,7 @@ import LanguageSwitcher from './components/LanguageSwitcher'
 import StencilaCellService from './StencilaCellService'
 import JavascriptRuntimeService from './runtimes/javascript/JavascriptRuntimeService'
 
-const RDS_JATS_PUBLIC_ID = '-//RDS/DTD Stencila Reproducible Documents DTD v1.0'
+import { RDS_JATS_PUBLIC_ID } from './StencilaArticleConstants'
 
 Texture.registerPlugin({
   name: 'stencila-plugin',
