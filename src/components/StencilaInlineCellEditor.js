@@ -1,4 +1,4 @@
-import { Component, isNil } from 'substance'
+import { Component, isNil, keys } from 'substance'
 import { NodeComponentMixin } from 'substance-texture'
 import StencilaConfiguration from '../nodes/StencilaConfiguration'
 
@@ -18,6 +18,8 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
       language: this._getLang()
     }).ref('editor')
     el.append(editor)
+
+    el.on('keydown', this._onKeydown)
 
     if (nodeState.error) {
       el.append(this._renderError($$, nodeState.error))
@@ -83,6 +85,16 @@ export default class StencilaInlineCellEditor extends NodeComponentMixin(Compone
       return nodeState.status
     } else {
       return 'not-evaluated'
+    }
+  }
+
+  _onKeydown (e) {
+    if (e.keyCode === keys.ESCAPE) {
+      e.stopPropagation()
+      e.preventDefault()
+      // NOTE: InlineNodeComponents (as all IsolatedNodeComponents) have
+      // an 'escape' action which selects the node
+      this.send('escape')
     }
   }
 }
