@@ -1,4 +1,4 @@
-import { Component, isPlainObject, isNil } from 'substance'
+import { Component, isPlainObject, isNil, sanitizeHTML } from 'substance'
 import StencilaConfiguration from '../nodes/StencilaConfiguration'
 import StencileImageComponent from './StencilaImageComponent'
 
@@ -124,11 +124,7 @@ export default class StencillaCellComponent extends Component {
             break
           }
           case 'html': {
-            // TODO: prevent HTML injection by stripping
-            if (value.html && value.html.indexOf(/[<]\s*script/) > -1) {
-              throw new Error('Dangerous HTML is prohibited')
-            }
-            valueEl.html(value.html)
+            valueEl.html(sanitizeHTML(value.html))
             break
           }
           default: {
