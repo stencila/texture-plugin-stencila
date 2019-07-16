@@ -3,9 +3,16 @@ import StencilaConfiguration from '../nodes/StencilaConfiguration'
 
 export default class StencillaCellComponent extends Component {
   didMount () {
+    // rerender when node state has changed
     this.context.editorState.addObserver(['document'], this._onNodeUpdate, this, {
       stage: 'render',
       document: { path: [this.props.node.id] }
+    })
+    // rerender when lanuage has changed
+    // this is necessary, because language is passed as a prop to CodeEditor
+    this.context.editorState.addObserver(['document'], this.rerender, this, {
+      stage: 'render',
+      document: { path: [StencilaConfiguration.id, 'language'] }
     })
   }
 

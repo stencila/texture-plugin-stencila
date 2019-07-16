@@ -1,5 +1,5 @@
 import StencilaConfiguration from './nodes/StencilaConfiguration'
-import StencilaCell from './nodes/StencilaCell';
+import StencilaCell from './nodes/StencilaCell'
 
 /**
  * This service provides the client side for running cells,
@@ -13,7 +13,7 @@ export default class StencileCellService {
     if (!this.editorSession) {
       throw new Error('Incompatible context')
     }
-    this.editorSession.getEditorState().addObserver(['document'], this._onLanguageChange, this, { stage: 'render', document: { path: [StencilaConfiguration.id, 'language'] } })
+    this.editorSession.getEditorState().addObserver(['document'], this._onLanguageChange, this, { stage: 'pre-render', document: { path: [StencilaConfiguration.id, 'language'] } })
   }
 
   static create (context) {
@@ -72,9 +72,9 @@ export default class StencileCellService {
     return doc.findAll('stencila-cell, stencila-inline-cell')
   }
 
-  _resetAllCells () {
+  _resetAllCells (propagate) {
     let allCells = this._getAllCells()
-    this.editorSession.updateNodeStates(allCells.map(cell => [cell.id, StencilaCell.getInitialNodeState()]), { propagate: true })
+    this.editorSession.updateNodeStates(allCells.map(cell => [cell.id, StencilaCell.getInitialNodeState()]), { propagate })
   }
 
   _getRuntimeService () {
@@ -93,8 +93,6 @@ export default class StencileCellService {
 
   _onLanguageChange () {
     // Note: need to wait for the next cycle, so that the current change is propagated
-    setTimeout(() => {
-      this._resetAllCells()
-    })
+    this._resetAllCells(false)
   }
 }
