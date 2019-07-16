@@ -1,5 +1,6 @@
 import { Component, isPlainObject, isNil } from 'substance'
 import StencilaConfiguration from '../nodes/StencilaConfiguration'
+import StencileImageComponent from './StencilaImageComponent'
 
 export default class StencillaCellComponent extends Component {
   didMount () {
@@ -115,7 +116,7 @@ export default class StencillaCellComponent extends Component {
           case 'blob': {
             if (value.mimeType && value.mimeType.startsWith('image')) {
               valueEl.append(
-                $$(ImageComponent, { value })
+                $$(StencileImageComponent, { value })
               )
             } else {
               valueEl.append('Unknown blob type')
@@ -174,43 +175,5 @@ export default class StencillaCellComponent extends Component {
 
   _getTitle () {
     return `Cell`
-  }
-}
-
-class ImageComponent extends Component {
-  dispose () {
-    this._dispose()
-  }
-
-  willReceiveProps (newProps) {
-    this._dispose()
-    this._createBlobUrl()
-  }
-
-  render ($$) {
-    return $$('img').attr('src', this._getUrl())
-  }
-
-  _createBlobUrl () {
-    let blob = this.props.value.blob
-    if (blob) {
-      this._blobUrl = URL.createObjectURL(blob)
-    }
-    return this._blobUrl
-  }
-
-  _dispose () {
-    if (this._blobUrl) {
-      window.URL.revokeObjectURL(this._blobUrl)
-      this._blobUrl = null
-    }
-  }
-
-  _getUrl () {
-    if (this.props.url) return this.props.url
-    if (this._blobUrl) return this._blobUrl
-    if (this.props.blob) {
-      return this._createBlobUrl()
-    }
   }
 }
