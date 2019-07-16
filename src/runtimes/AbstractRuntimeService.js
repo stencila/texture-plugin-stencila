@@ -173,7 +173,8 @@ export class AbstractRuntimeService {
       id: request.id,
       evalCounter: request.evalCounter,
       error: data.error,
-      value: data.value
+      value: data.value,
+      assignment: data.assignment
     }
     request.cb(response)
     if (response.error) {

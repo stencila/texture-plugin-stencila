@@ -18,7 +18,7 @@ export default class StencillaInlineCellComponent extends NodeOverlayEditorMixin
     let nodeState = node.state || {}
     if (!isNil(nodeState.error)) {
       return 'ERR'
-    } else if (!isNil(nodeState.hasOwnProperty('value'))) {
+    } else if (!isNil(nodeState.value)) {
       let value = nodeState.value
       // complex objects are problematic for inline-cells
       // thus show only a short version for these

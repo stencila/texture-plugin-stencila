@@ -52,7 +52,7 @@ export default class StencillaCellComponent extends Component {
       )
     }
 
-    if (!isNil(nodeState.value)) {
+    if (!isNil(nodeState.value) && !nodeState.assignment) {
       el.append(
         this._renderValue($$, nodeState.value)
       )

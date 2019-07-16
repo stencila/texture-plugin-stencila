@@ -52,20 +52,20 @@ import * as table from './table/table.js'
       } else {
         let programBody = program.body
         let result
+        let assignment = false
         if (programBody.length > 0) {
           let lastStmt = programBody[programBody.length - 1]
-          let _result = _eval(src) // eslint-disable-line no-useless-call
+          result = _eval(src) // eslint-disable-line no-useless-call
           // Note: ommitting the return value for assignment expressions
-          if (lastStmt.expression.type !== 'AssignmentExpression') {
-            result = _result
-          }
+          assignment = (lastStmt.expression.type === 'AssignmentExpression')
         }
         // TODO: remove code redundancy
         if (result instanceof Promise) {
           result.then(value => {
             _postMessage({
               id,
-              value: _transformValue(value)
+              value: _transformValue(value),
+              assignment
             })
           }).catch(error => {
             _postMessage({
@@ -76,7 +76,8 @@ import * as table from './table/table.js'
         } else {
           _postMessage({
             id,
-            value: _transformValue(result)
+            value: _transformValue(result),
+            assignment
           })
         }
       }

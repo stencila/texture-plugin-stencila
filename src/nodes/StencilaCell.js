@@ -5,6 +5,7 @@ export default class StencilaCell extends DocumentNode {
     return {
       status: 'not-evaluated',
       value: undefined,
+      assignment: false,
       evalCounter: undefined,
       error: undefined
     }
