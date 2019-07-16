@@ -1,6 +1,7 @@
-import { Component, isPlainObject, isNil, sanitizeHTML } from 'substance'
+import { Component, isPlainObject, isNil } from 'substance'
 import StencilaConfiguration from '../nodes/StencilaConfiguration'
 import StencileImageComponent from './StencilaImageComponent'
+import StencilaHTMLValueComponent from './StencilaHTMLValueComponent'
 
 export default class StencillaCellComponent extends Component {
   didMount () {
@@ -124,7 +125,9 @@ export default class StencillaCellComponent extends Component {
             break
           }
           case 'html': {
-            valueEl.html(sanitizeHTML(value.html))
+            valueEl.append(
+              $$(StencilaHTMLValueComponent, { value })
+            )
             break
           }
           default: {
